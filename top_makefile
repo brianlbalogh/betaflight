@@ -22,6 +22,7 @@ ALL_TARGETS += alienflightf4
 ALL_TARGETS += bluejayf4 
 ALL_TARGETS += vrcore 
 ALL_TARGETS += quanton
+ALL_TARGETS += aq32_v2
 
 CLEAN_TARGETS     := $(addprefix clean_, $(ALL_TARGETS)) 
 
@@ -49,6 +50,7 @@ clean_alienflightf4 alienflightf4:	opts := TARGET=ALIENFLIGHTF4
 clean_bluejayf4 bluejayf4:		opts := TARGET=BLUEJAYF4
 clean_vrcore vrcore:			opts := TARGET=VRCORE
 clean_quanton quanton:			opts := TARGET=QUANTON
+clean_aq32_v2 aq32_v2:			opts := TARGET=AQ32_V2
 
 
 .PHONY: all clean
