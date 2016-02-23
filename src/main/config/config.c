@@ -94,6 +94,14 @@ void useRcControlsConfig(modeActivationCondition_t *modeActivationConditions, es
     #ifdef STM32F10X_HD
         #define FLASH_PAGE_SIZE                 ((uint16_t)0x800)
     #endif
+
+    #if defined(STM32F40_41xxx)
+        #define FLASH_PAGE_SIZE                 ((uint32_t)0x20000)
+    #endif
+
+    #if defined (STM32F411xE)
+        #define FLASH_PAGE_SIZE                 ((uint32_t)0x20000)
+    #endif
 #endif
 
 #if !defined(FLASH_SIZE) && !defined(FLASH_PAGE_COUNT)
@@ -107,7 +115,13 @@ void useRcControlsConfig(modeActivationCondition_t *modeActivationConditions, es
 #endif
 
 #if defined(FLASH_SIZE)
-#define FLASH_PAGE_COUNT ((FLASH_SIZE * 0x400) / FLASH_PAGE_SIZE)
+#if defined(STM32F40_41xxx)
+    #define FLASH_PAGE_COUNT 4 // just to make calculations work
+#elif defined (STM32F411xE)
+    #define FLASH_PAGE_COUNT 4 // just to make calculations work
+#else
+    #define FLASH_PAGE_COUNT ((FLASH_SIZE * 0x400) / FLASH_PAGE_SIZE)
+#endif
 #endif
 
 #if !defined(FLASH_PAGE_SIZE)
@@ -124,8 +138,10 @@ void useRcControlsConfig(modeActivationCondition_t *modeActivationConditions, es
 #define FLASH_TO_RESERVE_FOR_CONFIG 0x1000
 #endif
 
-// use the last flash pages for storage
-#define CONFIG_START_FLASH_ADDRESS (0x08000000 + (uint32_t)((FLASH_PAGE_SIZE * FLASH_PAGE_COUNT) - FLASH_TO_RESERVE_FOR_CONFIG))
+#if !defined(CONFIG_START_FLASH_ADDRESS)
+    // use the last flash pages for storage
+    #define CONFIG_START_FLASH_ADDRESS (0x08000000 + (uint32_t)((FLASH_PAGE_SIZE * FLASH_PAGE_COUNT) - FLASH_TO_RESERVE_FOR_CONFIG))
+#endif
 
 master_t masterConfig;                 // master config struct with data independent from profiles
 profile_t *currentProfile;
@@ -145,7 +161,11 @@ static void resetAccelerometerTrims(flightDynamicsTrims_t *accelerometerTrims)
 
 static void resetPidProfile(pidProfile_t *pidProfile)
 {
+#if defined(STM32F40_41xxx) || defined(STM32F411xE)
+    pidProfile->pidController = 2;
+#else
     pidProfile->pidController = 1;
+#endif
 
     pidProfile->P8[ROLL] = 42;
     pidProfile->I8[ROLL] = 40;
@@ -220,6 +240,7 @@ void resetGpsProfile(gpsProfile_t *gpsProfile)
 }
 #endif
 
+#ifdef BARO
 void resetBarometerConfig(barometerConfig_t *barometerConfig)
 {
     barometerConfig->baro_sample_count = 21;
@@ -227,6 +248,7 @@ void resetBarometerConfig(barometerConfig_t *barometerConfig)
     barometerConfig->baro_cf_vel = 0.985f;
     barometerConfig->baro_cf_alt = 0.965f;
 }
+#endif
 
 void resetSensorAlignment(sensorAlignmentConfig_t *sensorAlignmentConfig)
 {
@@ -251,6 +273,7 @@ void resetFlight3DConfig(flight3DConfig_t *flight3DConfig)
     flight3DConfig->deadband3d_throttle = 50;
 }
 
+#ifdef TELEMETRY
 void resetTelemetryConfig(telemetryConfig_t *telemetryConfig)
 {
     telemetryConfig->telemetry_inversion = 0;
@@ -263,6 +286,7 @@ void resetTelemetryConfig(telemetryConfig_t *telemetryConfig)
     telemetryConfig->frsky_vfas_cell_voltage = 0;
     telemetryConfig->hottAlarmSoundInterval = 5;
 }
+#endif
 
 void resetBatteryConfig(batteryConfig_t *batteryConfig)
 {
@@ -435,9 +459,15 @@ static void resetConf(void)
 
     resetBatteryConfig(&masterConfig.batteryConfig);
 
+#ifdef TELEMETRY
     resetTelemetryConfig(&masterConfig.telemetryConfig);
+#endif
 
+#ifdef CONFIG_SERIALRX_PROVIDER
+    masterConfig.rxConfig.serialrx_provider = CONFIG_SERIALRX_PROVIDER;
+#else
     masterConfig.rxConfig.serialrx_provider = 0;
+#endif
     masterConfig.rxConfig.spektrum_sat_bind = 0;
     masterConfig.rxConfig.midrc = 1500;
     masterConfig.rxConfig.mincheck = 1100;
@@ -456,7 +486,13 @@ static void resetConf(void)
     masterConfig.rxConfig.rssi_ppm_invert = 0;
     masterConfig.rxConfig.rcSmoothing = 0;
     masterConfig.rxConfig.fpvCamAngleDegrees = 0;
+#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+    masterConfig.rxConfig.max_aux_channel = 12;
+#elif defined(STM32F303xC)
+    masterConfig.rxConfig.max_aux_channel = 6;
+#else
     masterConfig.rxConfig.max_aux_channel = 4;
+#endif
     masterConfig.rxConfig.acroPlusFactor = 30;
     masterConfig.rxConfig.acroPlusOffset = 40;
 
@@ -515,7 +551,9 @@ static void resetConf(void)
     masterConfig.accDeadband.z = 40;
     masterConfig.acc_unarmedcal = 1;
 
+#ifdef BARO
     resetBarometerConfig(&masterConfig.barometerConfig);
+#endif
 
     // Radio
     parseRcChannels("AETR1234", &masterConfig.rxConfig);
@@ -562,6 +600,11 @@ static void resetConf(void)
     applyDefaultLedStripConfig(masterConfig.ledConfigs);
 #endif
 
+#if defined(BLACKBOX) && defined(CONFIG_BLACKBOX_DEVICE)
+    featureSet(FEATURE_BLACKBOX);
+    masterConfig.blackbox_device = CONFIG_BLACKBOX_DEVICE;
+#endif
+
 #ifdef SPRACINGF3
     featureSet(FEATURE_BLACKBOX);
     masterConfig.blackbox_device = 1;
@@ -585,6 +628,19 @@ static void resetConf(void)
     masterConfig.blackbox_rate_denom = 1;
 #endif
 
+#ifdef CONFIG_FEATURE_RX_SERIAL
+    featureSet(FEATURE_RX_SERIAL);
+#endif
+#ifdef CONFIG_FEATURE_ONESHOT125
+    featureSet(FEATURE_ONESHOT125);
+#endif
+#ifdef CONFIG_MSP_PORT
+    masterConfig.serialConfig.portConfigs[CONFIG_MSP_PORT].functionMask = FUNCTION_MSP; 
+    masterConfig.serialConfig.portConfigs[CONFIG_MSP_PORT].msp_baudrateIndex = BAUD_9600;
+#endif
+#ifdef CONFIG_RX_SERIAL_PORT
+    masterConfig.serialConfig.portConfigs[CONFIG_RX_SERIAL_PORT].functionMask = FUNCTION_RX_SERIAL;
+#endif
     // alternative defaults settings for COLIBRI RACE targets
 #if defined(COLIBRI_RACE)
     masterConfig.escAndServoConfig.minthrottle = 1025;
@@ -957,6 +1013,12 @@ void writeEEPROM(void)
     // write it
     FLASH_Unlock();
     while (attemptsRemaining--) {
+#ifdef STM32F40_41xxx
+        FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
+#endif
+#ifdef STM32F411xE
+        FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
+#endif
 #ifdef STM32F303
         FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPERR);
 #endif
@@ -965,7 +1027,14 @@ void writeEEPROM(void)
 #endif
         for (wordOffset = 0; wordOffset < sizeof(master_t); wordOffset += 4) {
             if (wordOffset % FLASH_PAGE_SIZE == 0) {
+#if defined(STM32F40_41xxx)
+                //status = FLASH_EraseSector(FLASH_Sector_11, VoltageRange_3); //0x080E0000 to 0x08100000
+                status = FLASH_EraseSector(FLASH_Sector_8, VoltageRange_3); //0x08080000 to 0x080A0000
+#elif defined (STM32F411xE)
+                status = FLASH_EraseSector(FLASH_Sector_7, VoltageRange_3); //0x08060000 to 0x08080000
+#else
                 status = FLASH_ErasePage(CONFIG_START_FLASH_ADDRESS + wordOffset);
+#endif
                 if (status != FLASH_COMPLETE) {
                     break;
                 }
@@ -1035,6 +1104,8 @@ void handleOneshotFeatureChangeOnRestart(void)
     delay(50);
     // Apply additional delay when OneShot125 feature changed from on to off state
     if (feature(FEATURE_ONESHOT125) && !featureConfigured(FEATURE_ONESHOT125)) {
+        delay(ONESHOT_FEATURE_CHANGED_DELAY_ON_BOOT_MS);
+    } else if (feature(FEATURE_MULTISHOT) && !featureConfigured(FEATURE_MULTISHOT)) {
         delay(ONESHOT_FEATURE_CHANGED_DELAY_ON_BOOT_MS);
     }
 }
