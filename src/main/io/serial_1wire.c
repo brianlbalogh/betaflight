@@ -113,13 +113,28 @@ static void gpioSetOne(uint32_t escIndex, GPIO_Mode mode) {
 }
 #endif
 
+#define disable_hardware_uart  __disable_irq()
+#define enable_hardware_uart   __enable_irq()
+#if defined (STM32F40_41xxx) || defined (STM32F411xE) //TODO need to look at this
+#define ESC_HI(escIndex)       ((escHardware[escIndex].gpio->IDR & (1U << escHardware[escIndex].pinpos)) != (uint32_t)Bit_RESET)
+#define RX_HI                  ((S1W_RX_GPIO->IDR & S1W_RX_PIN) != (uint32_t)Bit_RESET)
+#define ESC_SET_HI(escIndex)   escHardware[escIndex].gpio->BSRRL = (1U << escHardware[escIndex].pinpos)
+#define ESC_SET_LO(escIndex)   escHardware[escIndex].gpio->BSRRH = (1U << escHardware[escIndex].pinpos)
+#define TX_SET_HIGH            S1W_TX_GPIO->BSRRL = S1W_TX_PIN
+#define TX_SET_LO              S1W_TX_GPIO->BSRRH = S1W_TX_PIN
+#else
 #define ESC_HI(escIndex)       ((escHardware[escIndex].gpio->IDR & escHardware[escIndex].pin) != (uint32_t)Bit_RESET)
 #define RX_HI                  ((S1W_RX_GPIO->IDR & S1W_RX_PIN) != (uint32_t)Bit_RESET)
 #define ESC_SET_HI(escIndex)   escHardware[escIndex].gpio->BSRR = escHardware[escIndex].pin
 #define ESC_SET_LO(escIndex)   escHardware[escIndex].gpio->BRR = escHardware[escIndex].pin
 #define TX_SET_HIGH            S1W_TX_GPIO->BSRR = S1W_TX_PIN
 #define TX_SET_LO              S1W_TX_GPIO->BRR = S1W_TX_PIN
+#endif
 
+#if defined (STM32F40_41xxx) || defined (STM32F411xE) //TODO need to look at this
+#define ESC_INPUT(escIndex)    escHardware[escIndex].gpio->MODER &= ~(GPIO_MODER_MODER0 << (escHardware[escIndex].pinpos * 2))
+#define ESC_OUTPUT(escIndex)   escHardware[escIndex].gpio->MODER |= GPIO_Mode_OUT << (escHardware[escIndex].pinpos * 2)
+#endif
 #ifdef STM32F303xC
 #define ESC_INPUT(escIndex)    escHardware[escIndex].gpio->MODER &= ~(GPIO_MODER_MODER0 << (escHardware[escIndex].pinpos * 2))
 #define ESC_OUTPUT(escIndex)   escHardware[escIndex].gpio->MODER |= GPIO_Mode_OUT << (escHardware[escIndex].pinpos * 2)

@@ -25,7 +25,7 @@ typedef enum {
 
 typedef enum {
     FUNCTION_NONE                = 0,
-    FUNCTION_MSP                 = (1 << 0), // 1
+    FUNCTION_LTM                 = (1 << 0), // 1
     FUNCTION_GPS                 = (1 << 1), // 2
     FUNCTION_TELEMETRY_FRSKY     = (1 << 2), // 4
     FUNCTION_TELEMETRY_HOTT      = (1 << 3), // 8
@@ -55,6 +55,8 @@ typedef enum {
     SERIAL_PORT_USART2,
     SERIAL_PORT_USART3,
     SERIAL_PORT_USART4,
+    SERIAL_PORT_USART5,
+    SERIAL_PORT_USART6,
     SERIAL_PORT_USB_VCP = 20,
     SERIAL_PORT_SOFTSERIAL1 = 30,
     SERIAL_PORT_SOFTSERIAL2,
