@@ -216,14 +216,9 @@ static void mpu6050FindRevision(void)
 
 extiCallbackRec_t mpuIntCallbackRec;
 
-void MPU_DATA_READY_EXTI_Handler(extiCallbackRec_t *cb)
+void mpuIntExtiHandler(extiCallbackRec_t *cb)
 {
     UNUSED(cb);
-    if (EXTI_GetITStatus(mpuIntExtiConfig->exti_line) == RESET) {
-        return;
-    }
-
-    EXTI_ClearITPendingBit(mpuIntExtiConfig->exti_line);
 
     mpuDataReady = true;
 
@@ -250,7 +245,6 @@ void mpuIntExtiInit(void)
         return;
     }
 
-
 #if defined(USE_MPU_DATA_READY_SIGNAL) && defined(USE_EXTI)
     IO_t mpuIntIO = IOGetByTag(mpuIntExtiConfig->io);
        
@@ -263,7 +257,7 @@ void mpuIntExtiInit(void)
     }
 #endif
 
-    EXTIHandlerInit(&mpuIntCallbackRec, MPU_DATA_READY_EXTI_Handler);
+    EXTIHandlerInit(&mpuIntCallbackRec, mpuIntExtiHandler);
     EXTIConfig(mpuIntIO, &mpuIntCallbackRec, NVIC_PRIO_MPU_INT_EXTI, EXTI_Trigger_Rising);
     EXTIEnable(mpuIntIO, true);
 #endif
