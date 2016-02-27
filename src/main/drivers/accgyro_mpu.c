@@ -29,7 +29,7 @@
 #include "nvic.h"
 
 #include "system.h"
-#include "gpio.h"
+#include "io.h"
 #include "exti.h"
 #include "bus_i2c.h"
 #include "gyro_sync.h"
@@ -41,6 +41,7 @@
 #include "accgyro_mpu6500.h"
 #include "accgyro_spi_mpu6000.h"
 #include "accgyro_spi_mpu6500.h"
+#include "accgyro_spi_mpu9250.h"
 #include "accgyro_mpu.h"
 
 //#define DEBUG_MPU_DATA_READY_INTERRUPT
@@ -56,6 +57,9 @@ static volatile bool mpuDataReady;
 static bool detectSPISensorsAndUpdateDetectionResult(void);
 #endif
 
+#ifndef MPU_I2C_INSTANCE
+#define MPU_I2C_INSTANCE I2C_DEVICE
+#endif
 mpuDetectionResult_t mpuDetectionResult;
 
 mpuConfiguration_t mpuConfiguration;
@@ -85,12 +89,15 @@ mpuDetectionResult_t *detectMpu(const extiConfig_t *configToUse)
 
 #ifndef USE_I2C
     ack = false;
+    sig = 0;
 #else
     ack = mpuReadRegisterI2C(MPU_RA_WHO_AM_I, 1, &sig);
 #endif
     if (ack) {
         mpuConfiguration.read = mpuReadRegisterI2C;
         mpuConfiguration.write = mpuWriteRegisterI2C;
+        mpuConfiguration.slowread = mpuReadRegisterI2C;
+        mpuConfiguration.verifywrite = mpuWriteRegisterI2C;
     } else {
 #ifdef USE_SPI
         bool detectedSpiSensor = detectSPISensorsAndUpdateDetectionResult();
@@ -133,6 +140,8 @@ static bool detectSPISensorsAndUpdateDetectionResult(void)
         mpuDetectionResult.sensor = MPU_65xx_SPI;
         mpuConfiguration.gyroReadXRegister = MPU_RA_GYRO_XOUT_H;
         mpuConfiguration.read = mpu6500ReadRegister;
+        mpuConfiguration.slowread = mpu6500SlowReadRegister;
+        mpuConfiguration.verifywrite = verifympu6500WriteRegister;
         mpuConfiguration.write = mpu6500WriteRegister;
         return true;
     }
@@ -143,7 +152,21 @@ static bool detectSPISensorsAndUpdateDetectionResult(void)
         mpuDetectionResult.sensor = MPU_60x0_SPI;
         mpuConfiguration.gyroReadXRegister = MPU_RA_GYRO_XOUT_H;
         mpuConfiguration.read = mpu6000ReadRegister;
+        mpuConfiguration.slowread = mpu6000SlowReadRegister;
+        mpuConfiguration.verifywrite = verifympu6000WriteRegister;
         mpuConfiguration.write = mpu6000WriteRegister;
+        return true;
+    }
+#endif
+
+#ifdef USE_GYRO_SPI_MPU9250
+    if (mpu9250SpiDetect()) {
+        mpuDetectionResult.sensor = MPU_9250_SPI;
+        mpuConfiguration.gyroReadXRegister = MPU_RA_GYRO_XOUT_H;
+        mpuConfiguration.read = mpu9250ReadRegister;
+        mpuConfiguration.slowread = mpu9250SlowReadRegister;
+        mpuConfiguration.verifywrite = verifympu9250WriteRegister;
+        mpuConfiguration.write = mpu9250WriteRegister;
         return true;
     }
 #endif
@@ -299,13 +322,13 @@ void mpuIntExtiInit(void)
 
 static bool mpuReadRegisterI2C(uint8_t reg, uint8_t length, uint8_t* data)
 {
-    bool ack = i2cRead(MPU_ADDRESS, reg, length, data);
+    bool ack = i2cRead(MPU_I2C_INSTANCE, MPU_ADDRESS, reg, length, data);
     return ack;
 }
 
 static bool mpuWriteRegisterI2C(uint8_t reg, uint8_t data)
 {
-    bool ack = i2cWrite(MPU_ADDRESS, reg, data);
+    bool ack = i2cWrite(MPU_I2C_INSTANCE, MPU_ADDRESS, reg, data);
     return ack;
 }
 

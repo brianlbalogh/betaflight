@@ -37,6 +37,14 @@
 
 extern uint16_t acc_1G;
 
+#define BIT_I2C_IF_DIS              0x10
+
+void resetGyro (void) {
+    // Device Reset
+    mpuConfiguration.write(MPU_RA_PWR_MGMT_1, MPU6500_BIT_RESET);
+    delay(100);
+}
+
 bool mpu6500AccDetect(acc_t *acc)
 {
     if (mpuDetectionResult.sensor != MPU_65xx_I2C) {
