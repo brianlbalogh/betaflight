@@ -145,7 +145,7 @@ static IO_t xclrIO;
 #define BMP085_ON
 #endif
 
-void bmp085InitXClrIO(const bmp085Config_t *config) {
+void bmp085InitXclrIO(const bmp085Config_t *config) {
 
     if (!xclrIO && config && config->xclrIO) {
         xclrIO = IOGetByTag(config->xclrIO);
@@ -156,7 +156,7 @@ void bmp085InitXClrIO(const bmp085Config_t *config) {
 
 void bmp085Disable(const bmp085Config_t *config)
 {
-    bmp085InitXClrIO(config);
+    bmp085InitXclrIO(config);
     BMP085_OFF;
 }
 
