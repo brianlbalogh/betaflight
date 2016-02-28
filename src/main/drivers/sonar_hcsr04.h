@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include "drivers/io.h"
 #include "platform.h"
 
 typedef struct sonarHardware_s {
@@ -24,9 +25,8 @@ typedef struct sonarHardware_s {
 	GPIO_TypeDef* trigger_gpio;
     uint16_t echo_pin;
 	GPIO_TypeDef* echo_gpio;
-    uint32_t exti_line;
-    uint8_t exti_pin_source;
-    IRQn_Type exti_irqn;
+    ioTag_t triggerIO;
+    ioTag_t echoIO;
 } sonarHardware_t;
 
 typedef struct sonarRange_s {

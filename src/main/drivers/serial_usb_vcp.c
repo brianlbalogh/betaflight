@@ -26,8 +26,13 @@
 #include "common/utils.h"
 
 #include "usb_core.h"
+#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+#include "usbd_cdc_vcp.h"
+#else
 #include "usb_init.h"
 #include "hw_config.h"
+#endif
+#include "common/utils.h"
 
 #include "drivers/system.h"
 
@@ -173,10 +178,19 @@ serialPort_t *usbVcpOpen(void)
 {
     vcpPort_t *s;
 
+#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+       USBD_Init(&USB_OTG_dev,
+             USB_OTG_FS_CORE_ID,
+             &USR_desc,
+             &USBD_CDC_cb,
+             &USR_cb);
+#else
+
     Set_System();
     Set_USBClock();
     USB_Interrupts_Config();
     USB_Init();
+#endif
 
     s = &vcpPort;
     s->port.vTable = usbVTable;
