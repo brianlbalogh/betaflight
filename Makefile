@@ -1164,4 +1164,4 @@ test:
 $(TARGET_OBJS) : Makefile
 
 # include auto-generated dependencies
-include $(TARGET_DEPS)
+-include $(TARGET_DEPS)
