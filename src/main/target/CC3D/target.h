@@ -17,27 +17,24 @@
 
 #define TARGET_BOARD_IDENTIFIER "CC3D" // CopterControl 3D
 
-#define LED0_GPIO   GPIOB
-#define LED0_PIN    Pin_3 // PB3 (LED)
-#define LED0_PERIPHERAL RCC_APB2Periph_GPIOB
-#define LED0
+#define USBD_PRODUCT_STRING "CC3D"
+#ifdef OPBL
+       #define USBD_SERIALNUMBER_STRING "0x8003000"
+#endif
 
-#define INVERTER_PIN Pin_2 // PB2 (BOOT1) used as inverter select GPIO
-#define INVERTER_GPIO GPIOB
-#define INVERTER_PERIPHERAL RCC_APB2Periph_GPIOB
+#define LED0 PB3
+#define INVERTER PB2
 #define INVERTER_USART USART1
 
+#define USE_EXTI
+#define MPU_INT_EXTI PA3
+ 
+#define BEEPER PA15
 
-#define BEEP_GPIO GPIOA
-#define BEEP_PIN Pin_15 // PA15 (Beeper)
-#define BEEP_PERIPHERAL RCC_APB2Periph_GPIOA
-
-#define MPU6000_CS_GPIO       GPIOA
-#define MPU6000_CS_PIN        GPIO_Pin_4
+#define MPU6000_CS_PIN        PA4
 #define MPU6000_SPI_INSTANCE  SPI1
 
-#define M25P16_CS_GPIO        GPIOB
-#define M25P16_CS_PIN         GPIO_Pin_12
+#define M25P16_CS_PIN         PB12
 #define M25P16_SPI_INSTANCE   SPI2
 
 #define USE_FLASHFS
@@ -71,8 +68,6 @@
 #define MAG
 #define USE_MAG_HMC5883
 
-#define INVERTER
-#define BEEPER
 #define DISPLAY
 
 #define USE_VCP
@@ -99,6 +94,10 @@
 #define I2C_DEVICE (I2CDEV_2) // Flex port - SCL/PB10, SDA/PB11
 
 #define USE_ADC
+
+#define CURRENT_METER_ADC_PIN       PB1
+#define VBAT_ADC_PIN                PA0
+#define RSSI_ADC_PIN                PB0
 
 #define CURRENT_METER_ADC_GPIO      GPIOB
 #define CURRENT_METER_ADC_GPIO_PIN  GPIO_Pin_1
@@ -150,3 +149,8 @@
 #define BIND_PIN   Pin_11
 
 #define USE_QUATERNION
+
+// IO - from schematics
+#define TARGET_IO_PORTA 0xffff
+#define TARGET_IO_PORTB 0xffff
+#define TARGET_IO_PORTC (BIT(14))

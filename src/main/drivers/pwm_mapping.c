@@ -360,7 +360,7 @@ static const uint16_t airPWM[] = {
 };
 #endif
 
-#if defined(SPARKY) || defined(ALIENFLIGHTF3) || defined(ALIENWIIF3)
+#if defined(SPARKY) || defined(ALIENFLIGHTF3)
 static const uint16_t multiPPM[] = {
     PWM11 | (MAP_TO_PPM_INPUT << 8), // PPM input
 

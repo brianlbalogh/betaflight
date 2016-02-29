@@ -18,31 +18,26 @@
 #pragma once
 
 #define TARGET_BOARD_IDENTIFIER "AFF3" // AlienFlight F3.
+#define USBD_PRODUCT_STRING "AlienFlight F3"
 #define USE_HARDWARE_REVISION_DETECTION
 
 #define HW_GPIO     GPIOB
 #define HW_PIN      Pin_2
 #define HW_PERIPHERAL RCC_AHBPeriph_GPIOB
 
+#define CONFIG_SERIALRX_PROVIDER SERIALRX_SPEKTRUM2048
+#define CONFIG_FEATURE_RX_SERIAL
+#define CONFIG_RX_SERIAL_PORT 2
+
 // LED's V1
-#define LED0_GPIO   GPIOB
-#define LED0_PIN    Pin_4 // Blue LEDs - PB4
-#define LED0_PERIPHERAL RCC_AHBPeriph_GPIOB
-#define LED1_GPIO   GPIOB
-#define LED1_PIN    Pin_5  // Green LEDs - PB5
-#define LED1_PERIPHERAL RCC_AHBPeriph_GPIOB
+#define LED0    PB4 // Blue LEDs - PB4
+#define LED1    PB5  // Green LEDs - PB5
 
 // LED's V2
-#define LED0_GPIO_2   GPIOB
-#define LED0_PIN_2    Pin_8 // Blue LEDs - PB8
-#define LED0_PERIPHERAL_2 RCC_AHBPeriph_GPIOB
-#define LED1_GPIO_2   GPIOB
-#define LED1_PIN_2    Pin_9  // Green LEDs - PB9
-#define LED1_PERIPHERAL_2 RCC_AHBPeriph_GPIOB
+#define LED0_2    PB8 // Blue LEDs - PB8
+#define LED1_2    PB9  // Green LEDs - PB9
 
-#define BEEP_GPIO   GPIOA
-#define BEEP_PIN    Pin_5  // White LEDs - PA5
-#define BEEP_PERIPHERAL RCC_AHBPeriph_GPIOA
+#define BEEPER  PA5  // White LEDs - PA5
 
 #define USABLE_TIMER_CHANNEL_COUNT 11
 
@@ -50,6 +45,7 @@
 
 //#define DEBUG_MPU_DATA_READY_INTERRUPT
 #define USE_MPU_DATA_READY_SIGNAL
+#define MPU_INT_EXTI PA15
 
 // Using MPU6050 for the moment.
 #define GYRO
@@ -77,10 +73,6 @@
 #define USE_MAG_AK8963
 
 #define MAG_AK8963_ALIGN CW0_DEG_FLIP
-
-#define BEEPER
-#define LED0
-#define LED1
 
 #define USE_VCP
 #define USE_USART1 // Not connected - TX (PB6) RX PB7 (AF7)
@@ -113,30 +105,8 @@
 #define USE_I2C
 #define I2C_DEVICE (I2CDEV_2) // SDA (PA10/AF4), SCL (PA9/AF4)
 
-#define I2C2_SCL_GPIO        GPIOA
-#define I2C2_SCL_GPIO_AF     GPIO_AF_4
-#define I2C2_SCL_PIN         GPIO_Pin_9
-#define I2C2_SCL_PIN_SOURCE  GPIO_PinSource9
-#define I2C2_SCL_CLK_SOURCE  RCC_AHBPeriph_GPIOA
-#define I2C2_SDA_GPIO        GPIOA
-#define I2C2_SDA_GPIO_AF     GPIO_AF_4
-#define I2C2_SDA_PIN         GPIO_Pin_10
-#define I2C2_SDA_PIN_SOURCE  GPIO_PinSource10
-#define I2C2_SDA_CLK_SOURCE  RCC_AHBPeriph_GPIOA
-
-// SPI3
-// PA15 38 SPI3_NSS
-// PB3  39 SPI3_SCK
-// PB4  40 SPI3_MISO
-// PB5  41 SPI3_MOSI
-
-#define USE_SPI
-#define USE_SPI_DEVICE_3
-
-#define MPU6500_CS_GPIO_CLK_PERIPHERAL   RCC_AHBPeriph_GPIOA
-#define MPU6500_CS_GPIO                  GPIOA
-#define MPU6500_CS_PIN                   GPIO_Pin_15
-#define MPU6500_SPI_INSTANCE             SPI3
+#define I2C2_SCL         PA9
+#define I2C2_SDA         PA10
 
 #define USE_ADC
 
@@ -146,8 +116,7 @@
 
 //#define BOARD_HAS_VOLTAGE_DIVIDER
 
-#define VBAT_ADC_GPIO        GPIOA
-#define VBAT_ADC_GPIO_PIN    GPIO_Pin_4
+#define VBAT_ADC_PIN    PA4
 #define VBAT_ADC_CHANNEL     ADC_Channel_1
 
 //#define BLACKBOX
@@ -171,3 +140,9 @@
 #define BINDPLUG_PORT  GPIOB
 #define BINDPLUG_PIN   Pin_12
 
+// IO - assuming 303 in 64pin package, TODO
+#define TARGET_IO_PORTA 0xffff
+#define TARGET_IO_PORTB 0xffff
+#define TARGET_IO_PORTC 0xffff
+#define TARGET_IO_PORTD (BIT(2))
+#define TARGET_IO_PORTF (BIT(0)|BIT(1)|BIT(4))
