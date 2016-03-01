@@ -52,7 +52,7 @@ void systemBeepToggle(void)
 #endif
 }
 
-void beeperInit(beeperConfig_t *config)
+void beeperInit(const beeperConfig_t *config)
 {
 #ifndef BEEPER
     UNUSED(config);

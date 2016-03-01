@@ -25,7 +25,7 @@ typedef enum {
 
 typedef enum {
     FUNCTION_NONE                = 0,
-    FUNCTION_LTM                 = (1 << 0), // 1
+    FUNCTION_MSP                 = (1 << 0), // 1
     FUNCTION_GPS                 = (1 << 1), // 2
     FUNCTION_TELEMETRY_FRSKY     = (1 << 2), // 4
     FUNCTION_TELEMETRY_HOTT      = (1 << 3), // 8

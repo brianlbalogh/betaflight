@@ -203,7 +203,7 @@ bool m25p16_init()
        IOConfigGPIO(flashSpim25p16CsPin, SPI_IO_CS_CFG);
  
     //Maximum speed for standard READ command is 20mHz, other commands tolerate 25mHz
-    spiSetDivisor(M25P16_SPI_INSTANCE, SPI_18MHZ_CLOCK_DIVIDER);
+    spiSetDivisor(M25P16_SPI_INSTANCE, SPI_FAST_CLOCK);
 
     return m25p16_readIdentification();
 }

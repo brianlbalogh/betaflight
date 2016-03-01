@@ -379,7 +379,7 @@ void init(void)
 #endif
 
 #ifdef INVERTER
-    initInverter();
+    initInverter(true); // TODO: get this from config
 #endif
 
 #ifdef USE_BST

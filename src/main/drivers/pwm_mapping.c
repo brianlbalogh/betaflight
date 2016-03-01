@@ -1256,10 +1256,6 @@ if (init->useBuzzerP6) {
 #ifdef SPARKY
             if (init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
                 ppmAvoidPWMTimerClash(timerHardwarePtr, TIM2);
-
-#ifdef SPARKY
-            if (init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
-                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM2);
             }
 #endif
 #ifdef SPRACINGF3MINI
