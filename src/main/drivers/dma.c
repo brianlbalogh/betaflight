@@ -30,11 +30,21 @@
  */
 static dmaHandlers_t dmaHandlers;
 
+#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+void dmaNoOpHandler(DMA_Stream_TypeDef *channel)
+#else
 void dmaNoOpHandler(DMA_Channel_TypeDef *channel)
+#endif
 {
     UNUSED(channel);
 }
 
+#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+void DMA1_Stream1_IRQHandler(void)
+{
+    dmaHandlers.dma1Stream1IRQHandler(DMA1_Stream1);
+}
+#else
 void DMA1_Channel2_IRQHandler(void)
 {
     dmaHandlers.dma1Channel2IRQHandler(DMA1_Channel2);
@@ -54,19 +64,29 @@ void DMA1_Channel7_IRQHandler(void)
 {
     dmaHandlers.dma1Channel7IRQHandler(DMA1_Channel7);
 }
+#endif
 
 void dmaInit(void)
 {
     memset(&dmaHandlers, 0, sizeof(dmaHandlers));
+#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+    dmaHandlers.dma1Stream1IRQHandler = dmaNoOpHandler;
+#else
     dmaHandlers.dma1Channel2IRQHandler = dmaNoOpHandler;
     dmaHandlers.dma1Channel3IRQHandler = dmaNoOpHandler;
     dmaHandlers.dma1Channel6IRQHandler = dmaNoOpHandler;
     dmaHandlers.dma1Channel7IRQHandler = dmaNoOpHandler;
+#endif
 }
 
 void dmaSetHandler(dmaHandlerIdentifier_e identifier, dmaCallbackHandlerFuncPtr callback)
 {
     switch (identifier) {
+#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+        case DMA1_ST1_HANDLER:
+            dmaHandlers.dma1Stream1IRQHandler = callback;
+            break;
+#else
         case DMA1_CH2_HANDLER:
             dmaHandlers.dma1Channel2IRQHandler = callback;
             break;
@@ -79,5 +99,6 @@ void dmaSetHandler(dmaHandlerIdentifier_e identifier, dmaCallbackHandlerFuncPtr 
         case DMA1_CH7_HANDLER:
             dmaHandlers.dma1Channel7IRQHandler = callback;
             break;
+#endif
     }
 }

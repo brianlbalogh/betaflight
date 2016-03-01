@@ -77,6 +77,8 @@ void setStripColors(const hsvColor_t *colors)
     }
 }
 
+#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+#else
 void ws2811DMAHandler(DMA_Channel_TypeDef *channel) {
     if (DMA_GetFlagStatus(WS2811_DMA_TC_FLAG)) {
         ws2811LedDataTransferInProgress = 0;
@@ -84,11 +86,15 @@ void ws2811DMAHandler(DMA_Channel_TypeDef *channel) {
         DMA_ClearFlag(WS2811_DMA_TC_FLAG);
     }
 }
+#endif
 
 void ws2811LedStripInit(void)
 {
+#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+#else
     memset(&ledStripDMABuffer, 0, WS2811_DMA_BUFFER_SIZE);
     dmaSetHandler(WS2811_DMA_HANDLER_IDENTIFER, ws2811DMAHandler);
+#endif
     ws2811LedStripHardwareInit();
     ws2811UpdateStrip();
 }
