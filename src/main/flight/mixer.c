@@ -811,6 +811,8 @@ void mixTable(void)
 
         if (rollPitchYawMix[i] > rollPitchYawMixMax) rollPitchYawMixMax = rollPitchYawMix[i];
         if (rollPitchYawMix[i] < rollPitchYawMixMin) rollPitchYawMixMin = rollPitchYawMix[i];
+
+        if (debugMode == DEBUG_MIXER && i < 5) debug[i] = rollPitchYawMix[i];
     }
 
     // Scale roll/pitch/yaw uniformly to fit within throttle range
@@ -850,24 +852,29 @@ void mixTable(void)
         motorLimitReached = true;
         q_number_t mixReduction;
         qConstruct(&mixReduction, throttleRange, rollPitchYawMixRange, Q12_NUMBER);
-        //float mixReduction = (float) throttleRange / rollPitchYawMixRange;
+
         for (i = 0; i < motorCount; i++) {
             rollPitchYawMix[i] =  qMultiply(mixReduction,rollPitchYawMix[i]);
         }
-        // Get the maximum correction by setting offset to center. Only active below 50% of saturation levels to reduce spazzing out in crashes
-        if ((qPercent(mixReduction) > mixerConfig->airmode_saturation_limit) && IS_RC_MODE_ACTIVE(BOXAIRMODE)) {
+        // Get the maximum correction by setting offset to center
+        if (IS_RC_MODE_ACTIVE(BOXAIRMODE)) {
             throttleMin = throttleMax = throttleMin + (throttleRange / 2);
         }
+
+        if (debugMode == DEBUG_AIRMODE) debug[0] = rollPitchYawMixRange;
 
     } else {
         motorLimitReached = false;
         throttleMin = throttleMin + (rollPitchYawMixRange / 2);
         throttleMax = throttleMax - (rollPitchYawMixRange / 2);
+        if (debugMode == DEBUG_AIRMODE) debug[0] = 0;
     }
 
     // Now add in the desired throttle, but keep in a range that doesn't clip adjusted
     // roll/pitch/yaw. This could move throttle down, but also up for those low throttle flips.
     for (i = 0; i < motorCount; i++) {
+        if (debugMode == DEBUG_AIRMODE && i < 3) debug[1] = rollPitchYawMix[i];
+
         motor[i] = rollPitchYawMix[i] + constrain(throttle * currentMixer[i].throttle, throttleMin, throttleMax);
 
         if (isFailsafeActive) {
@@ -960,7 +967,7 @@ bool isMixerUsingServos(void)
 void filterServos(void)
 {
 #ifdef USE_SERVOS
-    int16_t servoIdx;
+    static int16_t servoIdx;
     static bool servoFilterIsSet;
     static biquad_t servoFilterState[MAX_SUPPORTED_SERVOS];
 
@@ -971,7 +978,7 @@ void filterServos(void)
     if (mixerConfig->servo_lowpass_enable) {
         for (servoIdx = 0; servoIdx < MAX_SUPPORTED_SERVOS; servoIdx++) {
             if (!servoFilterIsSet) {
-                BiQuadNewLpf(mixerConfig->servo_lowpass_freq, &servoFilterState[servoIdx], targetLooptime);
+                BiQuadNewLpf(mixerConfig->servo_lowpass_freq, &servoFilterState[servoIdx], targetPidLooptime);
                 servoFilterIsSet = true;
             }
 

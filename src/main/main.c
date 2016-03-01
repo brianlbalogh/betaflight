@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "platform.h"
 #include "scheduler.h"
@@ -195,6 +196,8 @@ void init(void)
 
     systemInit();
 
+    debugMode = masterConfig.debug_mode;
+
 #ifdef USE_HARDWARE_REVISION_DETECTION
     detectHardwareRevision();
 #endif
@@ -326,13 +329,17 @@ void init(void)
 #endif
 
     pwm_params.useOneshot = feature(FEATURE_ONESHOT125);
-    pwm_params.useFastPWM = masterConfig.use_fast_pwm ? true : false;
-    pwm_params.useOneshot42 = masterConfig.use_oneshot42 ? true : false;
+    if (masterConfig.use_oneshot42) {
+        pwm_params.useOneshot42 = masterConfig.use_oneshot42 ? true : false;
+        masterConfig.use_multiShot = false;
+    } else {
+        pwm_params.useMultiShot = masterConfig.use_multiShot ? true : false;
+    }
     pwm_params.motorPwmRate = masterConfig.motor_pwm_rate;
     pwm_params.idlePulse = masterConfig.escAndServoConfig.mincommand;
     if (feature(FEATURE_3D))
         pwm_params.idlePulse = masterConfig.flight3DConfig.neutral3d;
-    if (pwm_params.motorPwmRate > 500 && !masterConfig.use_fast_pwm)
+    if (pwm_params.motorPwmRate > 500)
         pwm_params.idlePulse = 0; // brushed motors
 #ifdef CC3D
     pwm_params.useBuzzerP6 = masterConfig.use_buzzer_p6 ? true : false;
@@ -588,6 +595,14 @@ void init(void)
     afatfs_init();
 #endif
 
+    if (masterConfig.gyro_lpf > 0 && masterConfig.gyro_lpf < 7) {
+        masterConfig.pid_process_denom = 1; // When gyro set to 1khz always set pid speed 1:1 to sampling speed
+        masterConfig.gyro_sync_denom = 1;
+    }
+
+    setTargetPidLooptime(masterConfig.pid_process_denom); // Initialize pid looptime
+
+
 #ifdef BLACKBOX
     initBlackbox();
 #endif
@@ -661,20 +676,19 @@ int main(void) {
     init();
 
     /* Setup scheduler */
-    rescheduleTask(TASK_GYROPID, targetLooptime - INTERRUPT_WAIT_TIME);
+    rescheduleTask(TASK_GYROPID, targetLooptime);
 
     setTaskEnabled(TASK_GYROPID, true);
+    setTaskEnabled(TASK_MOTOR, true);
+    rescheduleTask(TASK_MOTOR, lrintf((1.0f / masterConfig.motor_pwm_rate) * 1000000));
     if(sensors(SENSOR_ACC)) {
         setTaskEnabled(TASK_ACCEL, true);
-        switch(targetLooptime) {
+        switch(targetLooptime) {  // Switch statement kept in place to change acc rates in the future
             case(500):
-                accTargetLooptime = 10000;
-                break;
             case(375):
-                accTargetLooptime = 20000;
-                break;
             case(250):
-                accTargetLooptime = 30000;
+            case(125):
+                accTargetLooptime = 1000;
                 break;
             default:
             case(1000):

@@ -28,6 +28,7 @@ typedef enum {
 
 typedef struct {
     const char * taskName;
+    const char * subTaskName;
     bool         isEnabled;
     uint32_t     desiredPeriod;
     uint8_t      staticPriority;
@@ -35,12 +36,14 @@ typedef struct {
     uint32_t     totalExecutionTime;
     uint32_t     lastExecutionTime;
     uint32_t     averageExecutionTime;
+    uint32_t     latestDeltaTime;
 } cfTaskInfo_t;
 
 typedef enum {
     /* Actual tasks */
     TASK_SYSTEM = 0,
     TASK_GYROPID,
+    TASK_MOTOR,
     TASK_ACCEL,
     TASK_SERIAL,
     TASK_BEEPER,

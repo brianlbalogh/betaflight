@@ -106,14 +106,38 @@ void setGyroSamplingSpeed(uint16_t looptime) {
     uint16_t gyroSampleRate = 1000;
     uint8_t maxDivider = 1;
 
-    if (looptime != targetLooptime) {
+    if (looptime != targetLooptime || looptime == 0) {
+        if (looptime == 0) looptime = targetLooptime; // needed for pid controller changes
 #ifdef STM32F303xC
         if (looptime < 1000) {
             masterConfig.gyro_lpf = 0;
             gyroSampleRate = 125;
             maxDivider = 8;
+            masterConfig.pid_process_denom = 1;
+            masterConfig.acc_hardware = 0;
+            masterConfig.baro_hardware = 0;
+            masterConfig.mag_hardware = 0;
+            if (looptime < 250) {
+                masterConfig.acc_hardware = 1;
+                masterConfig.baro_hardware = 1;
+                masterConfig.mag_hardware = 1;
+                masterConfig.pid_process_denom = 2;
+            } else if (looptime < 375) {
+#if defined(LUX_RACE) || defined(COLIBRI_RACE) || defined(MOTOLAB) || defined(ALIENFLIGHTF3)
+                masterConfig.acc_hardware = 0;
+#else
+                masterConfig.acc_hardware = 1;
+#endif
+                masterConfig.baro_hardware = 1;
+                masterConfig.mag_hardware = 1;
+                masterConfig.pid_process_denom = 2;
+            }
         } else {
             masterConfig.gyro_lpf = 1;
+            masterConfig.pid_process_denom = 1;
+            masterConfig.acc_hardware = 0;
+            masterConfig.baro_hardware = 0;
+            masterConfig.mag_hardware = 0;
         }
 #else
         if (looptime < 1000) {
@@ -123,14 +147,29 @@ void setGyroSamplingSpeed(uint16_t looptime) {
             masterConfig.mag_hardware = 1;
             gyroSampleRate = 125;
             maxDivider = 8;
+            masterConfig.pid_process_denom = 1;
+            if (currentProfile->pidProfile.pidController == 2) masterConfig.pid_process_denom = 2;
+            if (looptime < 250) {
+                masterConfig.pid_process_denom = 3;
+            } else if (looptime < 375) {
+                if (currentProfile->pidProfile.pidController == 2) {
+                    masterConfig.pid_process_denom = 3;
+                } else {
+                    masterConfig.pid_process_denom = 2;
+                }
+            }
         } else {
             masterConfig.gyro_lpf = 1;
             masterConfig.acc_hardware = 0;
             masterConfig.baro_hardware = 0;
             masterConfig.mag_hardware = 0;
+            masterConfig.pid_process_denom = 1;
         }
 #endif
         masterConfig.gyro_sync_denom = constrain(looptime / gyroSampleRate, 1, maxDivider);
+
+        masterConfig.motor_pwm_rate = lrintf(1.0f / (gyroSampleRate * masterConfig.gyro_sync_denom * masterConfig.pid_process_denom * 0.000001f));
+        if (!(masterConfig.use_multiShot || masterConfig.use_oneshot42)) masterConfig.motor_pwm_rate = constrain(masterConfig.motor_pwm_rate, 1000, 3800);
     }
 }
 
@@ -1236,6 +1275,7 @@ static bool processInCommand(void)
     uint32_t i;
     uint16_t tmp;
     uint8_t rate;
+    uint8_t oldPid;
 #ifdef GPS
     uint8_t wp_no;
     int32_t lat = 0, lon = 0, alt = 0;
@@ -1283,8 +1323,10 @@ static bool processInCommand(void)
         setGyroSamplingSpeed(read16());
         break;
     case MSP_SET_PID_CONTROLLER:
+        oldPid = currentProfile->pidProfile.pidController;
         currentProfile->pidProfile.pidController = read8();
         pidSetController(currentProfile->pidProfile.pidController);
+        if (oldPid != currentProfile->pidProfile.pidController) setGyroSamplingSpeed(0); // recalculate looptimes for new PID
         break;
     case MSP_SET_PID:
         if (IS_PID_CONTROLLER_FP_BASED(currentProfile->pidProfile.pidController)) {

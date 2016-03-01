@@ -36,8 +36,8 @@ typedef struct master_t {
 
     uint16_t motor_pwm_rate;                // The update rate of motor outputs (50-498Hz)
     uint16_t servo_pwm_rate;                // The update rate of servo outputs (50-498Hz)
-    uint8_t use_fast_pwm;                   // Use fast PWM implementation when oneshot enabled
-    uint8_t use_oneshot42;                   // Oneshot42
+    uint8_t use_oneshot42;                  // Oneshot42
+    uint8_t use_multiShot;                  // multishot
 
 #ifdef USE_SERVOS
     servoMixer_t customServoMixer[MAX_SERVO_RULES];
@@ -64,7 +64,9 @@ typedef struct master_t {
     uint16_t dcm_kp;                        // DCM filter proportional gain ( x 10000)
     uint16_t dcm_ki;                        // DCM filter integral gain ( x 10000)
 
-    uint8_t pid_jitter_buffer;              // Jitter buffer time in us for pid controller for smoother motor output
+    uint8_t pid_process_denom;              // Processing denominator for PID controller vs gyro sampling rate
+
+    uint8_t debug_mode;                     // Processing denominator for PID controller vs gyro sampling rate
 
     gyroConfig_t gyroConfig;
 

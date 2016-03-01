@@ -152,7 +152,7 @@ static uint32_t activeFeaturesLatch = 0;
 static uint8_t currentControlRateProfileIndex = 0;
 controlRateConfig_t *currentControlRateProfile;
 
-static const uint8_t EEPROM_CONF_VERSION = 126;
+static const uint8_t EEPROM_CONF_VERSION = 128;
 
 static void resetAccelerometerTrims(flightDynamicsTrims_t *accelerometerTrims)
 {
@@ -360,7 +360,6 @@ void resetRcControlsConfig(rcControlsConfig_t *rcControlsConfig) {
 
 void resetMixerConfig(mixerConfig_t *mixerConfig) {
     mixerConfig->yaw_motor_direction = 1;
-    mixerConfig->airmode_saturation_limit = 30;
     mixerConfig->yaw_jump_prevention_limit = 200;
 #ifdef USE_SERVOS
     mixerConfig->tri_unarmed_servo = 1;
@@ -440,7 +439,9 @@ static void resetConf(void)
     masterConfig.gyro_sync_denom = 4;
     masterConfig.gyro_soft_lpf_hz = 60;
 
-    masterConfig.pid_jitter_buffer = 20;
+    masterConfig.pid_process_denom = 1;
+
+    masterConfig.debug_mode = 0;
 
     resetAccelerometerTrims(&masterConfig.accZero);
 
@@ -470,6 +471,7 @@ static void resetConf(void)
 #else
     masterConfig.rxConfig.serialrx_provider = 0;
 #endif
+    masterConfig.rxConfig.sbus_inversion = 1;
     masterConfig.rxConfig.spektrum_sat_bind = 0;
     masterConfig.rxConfig.midrc = 1500;
     masterConfig.rxConfig.mincheck = 1100;
@@ -521,7 +523,6 @@ static void resetConf(void)
     masterConfig.motor_pwm_rate = BRUSHLESS_MOTORS_PWM_RATE;
 #endif
     masterConfig.servo_pwm_rate = 50;
-    masterConfig.use_fast_pwm = 0;
     masterConfig.use_oneshot42 = 0;
 #ifdef CC3D
     masterConfig.use_buzzer_p6 = 0;
@@ -537,7 +538,11 @@ static void resetConf(void)
 
     resetSerialConfig(&masterConfig.serialConfig);
 
+#if defined(STM32F10X) && !defined(CC3D)
+    masterConfig.emf_avoidance = 1;
+#else
     masterConfig.emf_avoidance = 0;
+#endif
 
     resetPidProfile(&currentProfile->pidProfile);
 	
