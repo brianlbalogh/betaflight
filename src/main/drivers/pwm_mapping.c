@@ -1248,12 +1248,7 @@ if (init->useBuzzerP6) {
                 ppmAvoidPWMTimerClash(timerHardwarePtr, TIM1);
             }
 #endif
-#ifdef CC3D
-            if (init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
-                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM4);
-            }
-#endif
-#ifdef SPARKY
+#if defined(SPARKY) || defined(ALIENFLIGHTF3)
             if (init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
                 ppmAvoidPWMTimerClash(timerHardwarePtr, TIM2);
             }
