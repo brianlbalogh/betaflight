@@ -170,7 +170,7 @@ void mpu6000SpiAccInit(void)
 {
     mpuIntExtiInit();
 
-    acc_1G = 512 * 8;
+    acc_1G = 512 * 4;
 }
 
 bool verifympu6000WriteRegister(uint8_t reg, uint8_t data) {
@@ -273,7 +273,7 @@ static void mpu6000AccAndGyroInit(void) {
     verifympu6000WriteRegister(MPU_RA_GYRO_CONFIG, INV_FSR_2000DPS << 3);
 
     // Accel +/- 8 G Full Scale
-    verifympu6000WriteRegister(MPU_RA_ACCEL_CONFIG, INV_FSR_8G << 3);
+    verifympu6000WriteRegister(MPU_RA_ACCEL_CONFIG, INV_FSR_16G << 3);
 
     verifympu6000WriteRegister(MPU_RA_INT_PIN_CFG, 0 << 7 | 0 << 6 | 0 << 5 | 1 << 4 | 0 << 3 | 0 << 2 | 0 << 1 | 0 << 0);  // INT_ANYRD_2CLEAR
 
