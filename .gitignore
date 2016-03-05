@@ -4,6 +4,7 @@
 *.uvopt
 *.dep
 *.bak
+*.swp
 *.uvgui.*
 .project
 .settings
