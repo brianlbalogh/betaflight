@@ -21,6 +21,7 @@
 #define CONFIG_START_FLASH_ADDRESS (0x08080000) //0x08080000 to 0x080A0000 (FLASH_Sector_8)
 
 #define USE_EXTI
+#define USE_SERVOS
 
 #define LED0 PC13
 #define LED1 PC14
@@ -104,7 +105,7 @@
 #define TELEMETRY
 #define SERIAL_RX
 #define AUTOTUNE
-#define USE_QUAD_MIXER_ONLY
+//#define USE_QUAD_MIXER_ONLY
 #define USE_CLI
 
 #define USE_QUATERNION

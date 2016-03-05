@@ -29,6 +29,7 @@
 
 #define BOARD_HAS_VOLTAGE_DIVIDER
 #define USE_EXTI
+#define USE_SERVOS
 
 #define INVERTER PB15
 #define INVERTER_USART USART6
@@ -150,7 +151,7 @@
 #define TELEMETRY
 #define SERIAL_RX
 #define AUTOTUNE
-#define USE_QUAD_MIXER_ONLY
+//#define USE_QUAD_MIXER_ONLY
 #define USE_CLI
 
 #define USE_QUATERNION
