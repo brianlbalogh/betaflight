@@ -109,18 +109,17 @@ void setGyroSamplingSpeed(uint16_t looptime) {
     if (looptime != targetLooptime || looptime == 0) {
         if (looptime == 0) looptime = targetLooptime; // needed for pid controller changes
 #if defined(STM32F40_41xxx) || defined (STM32F411xE)
+        masterConfig.gyro_lpf = 0;
+        masterConfig.pid_process_denom = 1;
+        masterConfig.acc_hardware = 0;
+        masterConfig.baro_hardware = 0;
+        masterConfig.mag_hardware = 0;
         if (looptime < 1000) {
-            masterConfig.gyro_lpf = 0;
             gyroSampleRate = 125;
             maxDivider = 8;
-            masterConfig.pid_process_denom = 1;
-            masterConfig.acc_hardware = 0;
-            masterConfig.baro_hardware = 0;
-            masterConfig.mag_hardware = 0;
+            masterConfig.gyro_sync_denom = constrain(looptime / gyroSampleRate, 1, maxDivider);
             if (looptime < 375) {
-#if defined(USE_ACC_SPI_MPU6000) || defined(USE_ACC_SPI_MPU6500) || defined(USE_ACC_SPI_MPU9250)
-                masterConfig.acc_hardware = 0;
-#else
+#if !defined(USE_ACC_SPI_MPU6000) && !defined(USE_ACC_SPI_MPU6500) && !defined(USE_ACC_SPI_MPU9250)
                 masterConfig.acc_hardware = 1;
 #endif
                 masterConfig.baro_hardware = 1;
@@ -129,11 +128,7 @@ void setGyroSamplingSpeed(uint16_t looptime) {
                     masterConfig.pid_process_denom = 2;
             }
         } else {
-            masterConfig.gyro_lpf = 1;
-            masterConfig.pid_process_denom = 1;
-            masterConfig.acc_hardware = 0;
-            masterConfig.baro_hardware = 0;
-            masterConfig.mag_hardware = 0;
+            masterConfig.gyro_sync_denom = 8;
         }
 #elif defined(STM32F303xC)
         if (looptime < 1000) {
