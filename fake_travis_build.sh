@@ -10,6 +10,7 @@ targets=("PUBLISHMETA=True" \
      "TARGET=ALIENFLIGHTF4" \
      "TARGET=BLUEJAYF4" \
      "TARGET=VRCORE" \
+     "TARGET=AQ32_V2" \
      "TARGET=QUANTON")
 #    "TARGET=CC3D" \
 #    "TARGET=CC3D_OPBL" \
