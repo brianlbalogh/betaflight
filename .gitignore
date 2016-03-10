@@ -6,6 +6,8 @@
 *.bak
 *.swp
 *.uvgui.*
+*.swp
+*.save
 .project
 .settings
 .cproject
