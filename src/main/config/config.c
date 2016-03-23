@@ -628,7 +628,7 @@ static void resetConf(void)
     featureSet(FEATURE_BLACKBOX);
     masterConfig.blackbox_device = BLACKBOX_DEVICE_SDCARD;
 #else
-    masterConfig.blackbox_device = 0;
+    masterConfig.blackbox_device = BLACKBOX_DEVICE_SERIAL;
 #endif
 
     masterConfig.blackbox_rate_num = 1;

@@ -209,7 +209,15 @@ void init(void)
     // initialize IO (needed for all IO operations)
     IOInitGlobal();
 
-    ledInit();
+#ifdef ALIENFLIGHTF3
+    if (hardwareRevision == AFF3_REV_1) {
+        ledInit(false);
+    } else {
+        ledInit(true);
+    }
+#else
+    ledInit(false);
+#endif
 
 #ifdef USE_EXTI
     EXTIInit();

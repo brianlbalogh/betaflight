@@ -2548,6 +2548,9 @@ static void cliSet(char *cmdline)
             cliPrintf("%s = ", valueTable[i].name);
             cliPrintVar(val, len); // when len is 1 (when * is passed as argument), it will print min/max values as well, for gui
             cliPrint("\r\n");
+#ifdef STM32F4
+	    delayMicroseconds(500);
+#endif
         }
     } else if ((eqptr = strstr(cmdline, "=")) != NULL) {
         // has equals

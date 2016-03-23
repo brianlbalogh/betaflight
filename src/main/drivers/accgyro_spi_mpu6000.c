@@ -102,7 +102,7 @@ static bool mpuSpi6000InitDone = false;
 
 static IO_t mpuSpi6000CsPin = IO_NONE;
 
-void resetGyro (void) {
+void mpu6000ResetGyro (void) {
     // Device Reset
     mpu6000WriteRegister(MPU_RA_PWR_MGMT_1, BIT_H_RESET);
     delay(150);
@@ -156,6 +156,7 @@ void mpu6000SpiGyroInit(uint8_t lpf)
     // Accel and Gyro DLPF Setting
     mpu6000WriteRegister(MPU6000_CONFIG, lpf);
     delayMicroseconds(1);
+    spiSetDivisor(MPU6000_SPI_INSTANCE, SPI_FAST_CLOCK);
 
     int16_t data[3];
     mpuGyroRead(data);
@@ -272,7 +273,7 @@ static void mpu6000AccAndGyroInit(void) {
     // Gyro +/- 1000 DPS Full Scale
     verifympu6000WriteRegister(MPU_RA_GYRO_CONFIG, INV_FSR_2000DPS << 3);
 
-    // Accel +/- 8 G Full Scale
+    // Accel +/- 16 G Full Scale
     verifympu6000WriteRegister(MPU_RA_ACCEL_CONFIG, INV_FSR_16G << 3);
 
     verifympu6000WriteRegister(MPU_RA_INT_PIN_CFG, 0 << 7 | 0 << 6 | 0 << 5 | 1 << 4 | 0 << 3 | 0 << 2 | 0 << 1 | 0 << 0);  // INT_ANYRD_2CLEAR

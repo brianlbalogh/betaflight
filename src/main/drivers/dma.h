@@ -15,33 +15,37 @@
  * along with Cleanflight.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(STM32F40_41xxx) || defined (STM32F411xE)
-typedef void (*dmaCallbackHandlerFuncPtr)(DMA_Stream_TypeDef *channel);
-#else
-typedef void (*dmaCallbackHandlerFuncPtr)(DMA_Channel_TypeDef *channel);
-#endif
+#pragma once
+#include <platform.h>
+
+#if defined(STM32F4)
+typedef void (*dmaCallbackHandlerFuncPtr)(DMA_Stream_TypeDef *stream);
 
 typedef enum {
-#if defined(STM32F40_41xxx) || defined (STM32F411xE)
-    DMA1_ST1_HANDLER = 0,
+    DMA1_ST2_HANDLER = 0,
+} dmaHandlerIdentifier_e;
+
+typedef struct dmaHandlers_s {
+    dmaCallbackHandlerFuncPtr dma1Stream2IRQHandler;
+} dmaHandlers_t;
+
 #else
+typedef void (*dmaCallbackHandlerFuncPtr)(DMA_Channel_TypeDef *channel);
+
+typedef enum {
     DMA1_CH2_HANDLER = 0,
     DMA1_CH3_HANDLER,
     DMA1_CH6_HANDLER,
     DMA1_CH7_HANDLER,
-#endif
 } dmaHandlerIdentifier_e;
 
 typedef struct dmaHandlers_s {
-#if defined(STM32F40_41xxx) || defined (STM32F411xE)
-    dmaCallbackHandlerFuncPtr dma1Stream1IRQHandler;
-#else
     dmaCallbackHandlerFuncPtr dma1Channel2IRQHandler;
     dmaCallbackHandlerFuncPtr dma1Channel3IRQHandler;
     dmaCallbackHandlerFuncPtr dma1Channel6IRQHandler;
     dmaCallbackHandlerFuncPtr dma1Channel7IRQHandler;
-#endif
 } dmaHandlers_t;
+#endif
 
 void dmaInit(void);
 void dmaSetHandler(dmaHandlerIdentifier_e identifier, dmaCallbackHandlerFuncPtr callback);

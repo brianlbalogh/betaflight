@@ -143,6 +143,7 @@ static bool detectSPISensorsAndUpdateDetectionResult(void)
         mpuConfiguration.slowread = mpu6500SlowReadRegister;
         mpuConfiguration.verifywrite = verifympu6500WriteRegister;
         mpuConfiguration.write = mpu6500WriteRegister;
+        mpuConfiguration.reset = mpu6500ResetGyro;
         return true;
     }
 #endif
@@ -155,6 +156,7 @@ static bool detectSPISensorsAndUpdateDetectionResult(void)
         mpuConfiguration.slowread = mpu6000SlowReadRegister;
         mpuConfiguration.verifywrite = verifympu6000WriteRegister;
         mpuConfiguration.write = mpu6000WriteRegister;
+        mpuConfiguration.reset = mpu6000ResetGyro;
         return true;
     }
 #endif
@@ -167,6 +169,7 @@ static bool detectSPISensorsAndUpdateDetectionResult(void)
         mpuConfiguration.slowread = mpu9250SlowReadRegister;
         mpuConfiguration.verifywrite = verifympu9250WriteRegister;
         mpuConfiguration.write = mpu9250WriteRegister;
+        mpuConfiguration.reset = mpu9250ResetGyro;
         return true;
     }
 #endif
@@ -267,14 +270,27 @@ void mpuIntExtiInit(void)
 
 static bool mpuReadRegisterI2C(uint8_t reg, uint8_t length, uint8_t* data)
 {
+#ifndef USE_I2C
+    UNUSED(reg);
+    UNUSED(data);
+    UNUSED(length);
+    return false;
+#else
     bool ack = i2cRead(MPU_I2C_INSTANCE, MPU_ADDRESS, reg, length, data);
     return ack;
+#endif
 }
 
 static bool mpuWriteRegisterI2C(uint8_t reg, uint8_t data)
 {
+#ifndef USE_I2C
+    UNUSED(reg);
+    UNUSED(data);
+    return false;
+#else
     bool ack = i2cWrite(MPU_I2C_INSTANCE, MPU_ADDRESS, reg, data);
     return ack;
+#endif
 }
 
 bool mpuAccRead(int16_t *accData)

@@ -491,12 +491,8 @@ static void detectBaro(baroSensor_e baroHardwareToUse)
 
 #if defined(BARO_XCLR_GPIO) && defined(BARO_EOC_GPIO)
     static const bmp085Config_t defaultBMP085Config = {
-            .xclrGpioPin = IO_TAG(BARO_XCLR_PIN),
-            .eocGpioPin = IO_TAG(BARO_EOC_PIN),
-            .xclrGpioPin = BARO_XCLR_PIN,
-            .xclrGpioPort = BARO_XCLR_GPIO,
-            .eocGpioPin = BARO_EOC_PIN,
-            .eocGpioPort = BARO_EOC_GPIO
+        .xclrIO = IO_TAG(BARO_XCLR_PIN),
+        .eocIO = IO_TAG(BARO_EOC_PIN),
     };
     bmp085Config = &defaultBMP085Config;
 #endif
@@ -559,10 +555,10 @@ static void detectMag(magSensor_e magHardwareToUse)
 
 #ifdef NAZE
     static const hmc5883Config_t nazeHmc5883Config_v1_v4 = {
-            .io  = IO_TAG(PB12),
+            .io = IO_TAG(PB12),
     };
     static const hmc5883Config_t nazeHmc5883Config_v5 = {
-            .io  = IO_TAG(PC14),
+            .io = IO_TAG(PC14),
     };
     if (hardwareRevision < NAZE32_REV5) {
         hmc5883Config = &nazeHmc5883Config_v1_v4;
@@ -573,7 +569,7 @@ static void detectMag(magSensor_e magHardwareToUse)
 
 #ifdef SPRACINGF3
     static const hmc5883Config_t spRacingF3Hmc5883Config = {
-        .io  = IO_TAG(PC14),
+        .io = IO_TAG(PC14),
     };
 
     hmc5883Config = &spRacingF3Hmc5883Config;

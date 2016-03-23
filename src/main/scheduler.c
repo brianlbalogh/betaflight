@@ -137,7 +137,11 @@ void rescheduleTask(cfTaskId_e taskId, uint32_t newPeriodMicros)
 {
     if (taskId == TASK_SELF || taskId < TASK_COUNT) {
         cfTask_t *task = taskId == TASK_SELF ? currentTask : &cfTasks[taskId];
+#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+        task->desiredPeriod = MAX(10, newPeriodMicros);  // Limit delay to 10us (100 kHz) to prevent scheduler clogging
+#else
         task->desiredPeriod = MAX(100, newPeriodMicros);  // Limit delay to 100us (10 kHz) to prevent scheduler clogging
+#endif
     }
 }
 
