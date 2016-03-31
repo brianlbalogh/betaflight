@@ -23,6 +23,9 @@
 #define BEEPER      PC15
 #define BEEPER_INVERTED
 
+#define USE_ESCSERIAL
+#define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
+
 #define USABLE_TIMER_CHANNEL_COUNT 17
 
 #define EXTI_CALLBACK_HANDLER_COUNT 2 // MPU data ready and MAG data ready

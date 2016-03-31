@@ -27,6 +27,9 @@
 
 #define USBD_PRODUCT_STRING "AlienFlight F4"
 
+#define USE_ESCSERIAL
+#define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
+
 #define LED0 PC12
 #define LED1 PD2
 

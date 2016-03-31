@@ -28,6 +28,9 @@
 
 #define USBD_PRODUCT_STRING "VR Brain Core"
 
+#define USE_ESCSERIAL
+#define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
+
 #define LED0 PD14 // Blue LED
 #define LED1 PD15 // Red LED
 #define BEEPER PA0

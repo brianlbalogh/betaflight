@@ -30,6 +30,9 @@
 	#define USBD_SERIALNUMBER_STRING "0x8010000"
 #endif
 
+#define USE_ESCSERIAL
+#define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
+
 #define LED0 PC14
 #define LED1 PC13
 #define BEEPER PC13

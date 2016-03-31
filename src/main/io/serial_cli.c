@@ -47,6 +47,7 @@
 #include "drivers/pwm_rx.h"
 #include "drivers/sdcard.h"
 #include "drivers/gyro_sync.h"
+#include "drivers/serial_escserial.h"
 
 #include "drivers/buf_writer.h"
 
@@ -661,7 +662,7 @@ const clivalue_t valueTable[] = {
 
     { "gyro_lpf",                   VAR_UINT8  | MASTER_VALUE | MODE_LOOKUP,  &masterConfig.gyro_lpf, .config.lookup = { TABLE_GYRO_LPF } },
     { "gyro_sync_denom",            VAR_UINT8  | MASTER_VALUE,  &masterConfig.gyro_sync_denom, .config.minmax = { 1,  8 } },
-    { "gyro_soft_lpf",              VAR_FLOAT  | MASTER_VALUE,  &masterConfig.gyro_soft_lpf_hz, .config.minmax = { 0,  500 } },
+    { "gyro_lowpass_hz",            VAR_FLOAT  | MASTER_VALUE,  &masterConfig.gyro_soft_lpf_hz, .config.minmax = { 0,  500 } },
     { "moron_threshold",            VAR_UINT8  | MASTER_VALUE,  &masterConfig.gyroConfig.gyroMovementCalibrationThreshold, .config.minmax = { 0,  128 } },
     { "imu_dcm_kp",                 VAR_UINT16 | MASTER_VALUE,  &masterConfig.dcm_kp, .config.minmax = { 0,  50000 } },
     { "imu_dcm_ki",                 VAR_UINT16 | MASTER_VALUE,  &masterConfig.dcm_ki, .config.minmax = { 0,  50000 } },
@@ -695,8 +696,7 @@ const clivalue_t valueTable[] = {
     { "yaw_rate",                   VAR_UINT8  | PROFILE_RATE_VALUE, &masterConfig.profile[0].controlRateProfile[0].rates[FD_YAW], .config.minmax = { 0,  CONTROL_RATE_CONFIG_YAW_RATE_MAX } },
     { "tpa_rate",                   VAR_UINT8  | PROFILE_RATE_VALUE, &masterConfig.profile[0].controlRateProfile[0].dynThrPID, .config.minmax = { 0,  CONTROL_RATE_CONFIG_TPA_MAX} },
     { "tpa_breakpoint",             VAR_UINT16 | PROFILE_RATE_VALUE, &masterConfig.profile[0].controlRateProfile[0].tpa_breakpoint, .config.minmax = { PWM_RANGE_MIN,  PWM_RANGE_MAX} },
-    { "acro_plus_factor",           VAR_UINT8  | MASTER_VALUE, &masterConfig.rxConfig.acroPlusFactor, .config.minmax = {1, 100 } },
-    { "acro_plus_offset",           VAR_UINT8  | MASTER_VALUE, &masterConfig.rxConfig.acroPlusOffset, .config.minmax = {1, 90 } },
+    { "super_expo_factor",          VAR_UINT8  | MASTER_VALUE, &masterConfig.rxConfig.superExpoFactor, .config.minmax = {1, 100 } },
 
     { "failsafe_delay",             VAR_UINT8  | MASTER_VALUE,  &masterConfig.failsafeConfig.failsafe_delay, .config.minmax = { 0,  200 } },
     { "failsafe_off_delay",         VAR_UINT8  | MASTER_VALUE,  &masterConfig.failsafeConfig.failsafe_off_delay, .config.minmax = { 0,  200 } },
@@ -729,8 +729,11 @@ const clivalue_t valueTable[] = {
     { "mag_hardware",               VAR_UINT8  | MASTER_VALUE | MODE_LOOKUP,  &masterConfig.mag_hardware, .config.lookup = { TABLE_MAG_HARDWARE } },
     { "mag_declination",            VAR_INT16  | MASTER_VALUE, &masterConfig.mag_declination, .config.minmax = { -18000,  18000 } },
     { "pid_delta_method",           VAR_UINT8  | PROFILE_VALUE | MODE_LOOKUP, &masterConfig.profile[0].pidProfile.deltaMethod, .config.lookup = { TABLE_DELTA_METHOD } },
-    { "dterm_lpf_hz",               VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.dterm_lpf_hz, .config.minmax = {0, 500 } },
-    { "dterm_average_count",        VAR_UINT8  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.dterm_average_count, .config.minmax = {2, 12 } },
+    { "dterm_lowpass_hz",               VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.dterm_lpf_hz, .config.minmax = {0, 500 } },
+    { "dterm_average_count",        VAR_UINT8  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.dterm_average_count, .config.minmax = {0, 12 } },
+    { "iterm_reset_degrees",        VAR_UINT16 | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.rollPitchItermResetRate, .config.minmax = {50, 1000 } },
+    { "yaw_iterm_reset_degrees",    VAR_UINT16 | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.yawItermResetRate, .config.minmax = {25, 1000 } },
+    { "yaw_lowpass_hz",                 VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.dterm_lpf_hz, .config.minmax = {0, 500 } },
     { "pid_process_denom",          VAR_UINT8  | MASTER_VALUE,  &masterConfig.pid_process_denom, .config.minmax = { 1,  8 } },
 
     { "pid_controller",             VAR_UINT8  | PROFILE_VALUE | MODE_LOOKUP, &masterConfig.profile[0].pidProfile.pidController, .config.lookup = { TABLE_PID_CONTROLLER } },
@@ -745,18 +748,6 @@ const clivalue_t valueTable[] = {
     { "i_yaw",                      VAR_UINT8  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.I8[YAW], .config.minmax = { 0,  200 } },
     { "d_yaw",                      VAR_UINT8  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.D8[YAW], .config.minmax = { 0,  200 } },
 
-    { "p_pitchf",                   VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.P_f[PITCH], .config.minmax = { 0,  100 } },
-    { "i_pitchf",                   VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.I_f[PITCH], .config.minmax = { 0,  100 } },
-    { "d_pitchf",                   VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.D_f[PITCH], .config.minmax = { 0,  100 } },
-    { "p_rollf",                    VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.P_f[ROLL], .config.minmax = { 0,  100 } },
-    { "i_rollf",                    VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.I_f[ROLL], .config.minmax = { 0,  100 } },
-    { "d_rollf",                    VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.D_f[ROLL], .config.minmax = { 0,  100 } },
-    { "p_yawf",                     VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.P_f[YAW], .config.minmax = { 0,  100 } },
-    { "i_yawf",                     VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.I_f[YAW], .config.minmax = { 0,  100 } },
-    { "d_yawf",                     VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.D_f[YAW], .config.minmax = { 0,  100 } },
-
-    { "level_horizon",              VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.H_level, .config.minmax = { 0,  10 } },
-    { "level_angle",                VAR_FLOAT  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.A_level, .config.minmax = { 0,  10 } },
     { "sensitivity_horizon",        VAR_UINT8  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.H_sensitivity, .config.minmax = { 0,  250 } },
 
     { "p_alt",                      VAR_UINT8  | PROFILE_VALUE, &masterConfig.profile[0].pidProfile.P8[PIDALT], .config.minmax = { 0,  200 } },
@@ -1799,6 +1790,7 @@ typedef enum {
     DUMP_MASTER = (1 << 0),
     DUMP_PROFILE = (1 << 1),
     DUMP_RATES = (1 << 2),
+    DUMP_ALL = (1 << 3),
 } dumpFlags_e;
 
 
@@ -1827,7 +1819,11 @@ static void cliDump(char *cmdline)
         dumpMask = DUMP_RATES; 
     }
 
-    if (dumpMask & DUMP_MASTER) {
+    if (strcasecmp(cmdline, "all") == 0) {
+        dumpMask = DUMP_ALL;   // All profiles and rates
+    }
+
+    if ((dumpMask & DUMP_MASTER) || (dumpMask & DUMP_ALL)) {
 
         cliPrint("\r\n# version\r\n");
         cliVersion(NULL);
@@ -1969,22 +1965,32 @@ static void cliDump(char *cmdline)
         cliPrint("\r\n# rxfail\r\n");
         cliRxFail("");
         
-        uint8_t activeProfile = masterConfig.current_profile_index;
-        uint8_t i;
-        for (i=0; i<MAX_PROFILE_COUNT;i++) 
-            cliDumpProfile(i);
-        
-        changeProfile(activeProfile);
-        
+        if (dumpMask & DUMP_ALL) {
+            uint8_t activeProfile = masterConfig.current_profile_index;
+            uint8_t currentRateIndex = currentProfile->activeRateProfile;
+            uint8_t profileCount;
+            uint8_t rateCount;
+            for (profileCount=0; profileCount<MAX_PROFILE_COUNT;profileCount++) {
+                cliDumpProfile(profileCount);
+                for (rateCount=0; rateCount<MAX_RATEPROFILES; rateCount++)
+                    cliDumpRateProfile(rateCount);
+            }
+
+            changeProfile(activeProfile);
+            changeControlRateProfile(currentRateIndex);
+        } else {
+            cliDumpProfile(masterConfig.current_profile_index);
+            cliDumpRateProfile(currentProfile->activeRateProfile);
+        }
     }
 
     if (dumpMask & DUMP_PROFILE) {
         cliDumpProfile(masterConfig.current_profile_index);
-
     }
+
     if (dumpMask & DUMP_RATES) {				
         cliDumpRateProfile(currentProfile->activeRateProfile);
- }
+    }
     
 }
 
@@ -1995,16 +2001,11 @@ void cliDumpProfile(uint8_t profileIndex) {
         changeProfile(profileIndex);
         cliPrint("\r\n# profile\r\n");
         cliProfile("");
-        cliPrintf("################################################################################");
+        cliPrintf("############################# PROFILE VALUES ####################################\r\n");
+        cliProfile("");
         printSectionBreak();
         dumpValues(PROFILE_VALUE);
-        uint8_t currentRateIndex = currentProfile->activeRateProfile;
-        uint8_t i;
-        for (i=0; i<MAX_RATEPROFILES; i++)
-            cliDumpRateProfile(i);
-        
-        changeControlRateProfile(currentRateIndex);
-        cliPrintf("\r\n# Active rateprofile for profile %d, \r\n", profileIndex);	// output rateprofile again to mark "active rateprofile" 
+
         cliRateProfile("");
 }
 void cliDumpRateProfile(uint8_t rateProfileIndex) {

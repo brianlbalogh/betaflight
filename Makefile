@@ -418,6 +418,7 @@ COMMON_SRC = build_config.c \
 		   drivers/system.c \
 		   drivers/gyro_sync.c \
 		   drivers/buf_writer.c \
+		   drivers/serial_escserial.c \
 		   io/beeper.c \
 		   io/rc_controls.c \
 		   io/rc_curves.c \
@@ -795,7 +796,6 @@ COLIBRI_RACE_SRC = \
 		   drivers/display_ug2864hsweg01.c \
 		   drivers/light_ws2811strip.c \
 		   drivers/light_ws2811strip_stm32f30x.c \
-		   drivers/serial_escserial.c \
 		   drivers/serial_usb_vcp.c \
 		   $(HIGHEND_SRC) \
 		   $(COMMON_SRC) \
