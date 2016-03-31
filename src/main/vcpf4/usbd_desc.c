@@ -57,7 +57,9 @@
   * @{
   */ 
 #define USBD_LANGID_STRING              0x409
-#define USBD_MANUFACTURER_STRING        "RaceFlight"
+#ifndef USBD_MANUFACTURER_STRING
+#define USBD_MANUFACTURER_STRING        "STMicroelectronics"
+#endif
 
 #ifdef USBD_PRODUCT_STRING
   #define USBD_PRODUCT_HS_STRING          USBD_PRODUCT_STRING
