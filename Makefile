@@ -447,7 +447,6 @@ COMMON_SRC = build_config.c \
 		   $(DEVICE_STDPERIPH_SRC)
 
 HIGHEND_SRC = \
-		   flight/gtune.c \
 		   flight/navigation.c \
 		   flight/gps_conversion.c \
 		   common/colorconversion.c \
@@ -629,7 +628,6 @@ CJMCU_SRC = $(STM32F10x_COMMON_SRC) \
 		   drivers/light_led.c \
 		   drivers/sound_beeper.c \
 		   hardware_revision.c \
-		   flight/gtune.c \
 		   blackbox/blackbox.c \
 		   blackbox/blackbox_io.c \
 		   $(COMMON_SRC)

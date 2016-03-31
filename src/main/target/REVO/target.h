@@ -134,7 +134,7 @@
 #define BLACKBOX
 #define TELEMETRY
 #define SERIAL_RX
-#define GTUNE
+//#define GTUNE
 #define USE_SERVOS
 #define USE_CLI
 

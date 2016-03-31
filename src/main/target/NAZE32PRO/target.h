@@ -40,7 +40,7 @@
 
 #define BLACKBOX
 #define GPS
-#define GTUNE
+//#define GTUNE
 #define SERIAL_RX
 #define TELEMETRY
 #define USE_SERVOS

@@ -78,7 +78,7 @@
 #endif
 
 //#undef USE_CLI
-#define GTUNE
+//#define GTUNE
 //#define BLACKBOX
 #define TARGET_IO_PORTA 0xffff
 #define TARGET_IO_PORTB 0xffff
