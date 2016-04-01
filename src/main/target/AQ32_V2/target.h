@@ -191,12 +191,18 @@
 #define BIND_PORT  GPIOD
 #define BIND_PIN   Pin_6
 
+#ifdef USE_VCP
+#define USE_SERIAL_1WIRE_VCP
+#else
 #define USE_SERIAL_1WIRE
-#define ESC_COUNT 8
+#endif
+#ifdef USE_SERIAL_1WIRE
 #define S1W_TX_GPIO         GPIOA
 #define S1W_TX_PIN          GPIO_Pin_9
 #define S1W_RX_GPIO         GPIOA
 #define S1W_RX_PIN          GPIO_Pin_10
+#endif
+#define ESC_COUNT 8
 
 #define USE_QUATERNION
 

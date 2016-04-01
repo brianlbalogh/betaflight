@@ -53,6 +53,7 @@ static uint16_t VCP_DeInit(void);
 static uint16_t VCP_Ctrl(uint32_t Cmd, uint8_t* Buf, uint32_t Len);
 static uint16_t VCP_DataTx(uint8_t* Buf, uint32_t Len);
 static uint16_t VCP_DataRx(uint8_t* Buf, uint32_t Len);
+static uint32_t VCP_GetBaudRate(void);
 
 CDC_IF_Prop_TypeDef VCP_fops = {VCP_Init, VCP_DeInit, VCP_Ctrl, VCP_DataTx, VCP_DataRx };
 
@@ -242,6 +243,18 @@ static uint16_t VCP_DataRx(uint8_t* Buf, uint32_t Len)
 }
 
 /*******************************************************************************
+ * Function Name  : VCP_GetBaudRate.
+ * Description    : Get the current baudrate
+ * Input          : None.
+ * Output         : None.
+ * Return         : baudrate in bps
+ *******************************************************************************/
+static uint32_t VCP_GetBaudRate(void)
+{
+    return g_lc.bitrate;
+}
+
+/*******************************************************************************
  * Function Name  : usbIsConfigured.
  * Description    : Determines if USB VCP is configured or not
  * Input          : None.
@@ -263,6 +276,18 @@ uint8_t usbIsConfigured(void)
 uint8_t usbIsConnected(void)
 {
     return (bDeviceState != UNCONNECTED);
+}
+
+/*******************************************************************************
+ * Function Name  : CDC_BaudRate.
+ * Description    : Get the current baud rate
+ * Input          : None.
+ * Output         : None.
+ * Return         : Baud rate in bps
+ *******************************************************************************/
+uint32_t CDC_BaudRate(void)
+{
+    return VCP_GetBaudRate();
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

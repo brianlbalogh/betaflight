@@ -79,6 +79,10 @@
 
 #define SERIAL_PORT_COUNT 4
 
+#ifdef USE_VCP
+#define USE_SERIAL_1WIRE_VCP
+#endif
+
 #define USE_ESCSERIAL
 #define ESCSERIAL_TIMER_TX_HARDWARE 0
 
