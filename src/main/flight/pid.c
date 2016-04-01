@@ -205,12 +205,12 @@ static void pidLuxFloat(pidProfile_t *pidProfile, controlRateConfig_t *controlRa
         // -----calculate I component.
         errorGyroIf[axis] = constrainf(errorGyroIf[axis] + RateError * getdT() * pidProfile->I8[axis] / 10.0f, -250.0f, 250.0f);
 
-        if (IS_RC_MODE_ACTIVE(BOXSUPEREXPO)) {
-            if (axis == YAW) {
-                if (ABS(gyroRate) >= pidProfile->yawItermResetRate) errorGyroIf[axis] = 0;
-            } else {
-                if (ABS(gyroRate) >= pidProfile->rollPitchItermResetRate) errorGyroIf[axis] = 0;
-            }
+        if (IS_RC_MODE_ACTIVE(BOXSUPEREXPO) && axis != YAW) {
+            if (ABS(gyroRate) >= pidProfile->rollPitchItermResetRate) errorGyroIf[axis] = 0;
+        }
+
+        if (axis == YAW) {
+            if (ABS(gyroRate) >= pidProfile->yawItermResetRate) errorGyroIf[axis] = 0;
         }
 
         if (antiWindupProtection || motorLimitReached) {
@@ -439,7 +439,7 @@ static void pidMultiWiiRewrite(pidProfile_t *pidProfile, controlRateConfig_t *co
         // -----Get the desired angle rate depending on flight mode
         if (axis == FD_YAW) {
             // YAW is always gyro-controlled (MAG correction is applied to rcCommand)
-            AngleRateTmp = ((int32_t)(rate + 27) * rcCommand[YAW]) >> 5;
+            AngleRateTmp = ((int32_t)(rate + 47) * rcCommand[YAW]) >> 5;
         } else {
             AngleRateTmp = ((int32_t)(rate + 27) * rcCommand[axis]) >> 4;
             if (FLIGHT_MODE(ANGLE_MODE) || FLIGHT_MODE(HORIZON_MODE)) {
@@ -492,12 +492,12 @@ static void pidMultiWiiRewrite(pidProfile_t *pidProfile, controlRateConfig_t *co
         // I coefficient (I8) moved before integration to make limiting independent from PID settings
         errorGyroI[axis] = constrain(errorGyroI[axis], (int32_t) - GYRO_I_MAX << 13, (int32_t) + GYRO_I_MAX << 13);
 
-        if (IS_RC_MODE_ACTIVE(BOXSUPEREXPO)) {
-            if (axis == YAW) {
-                if (ABS(gyroRate / 4) >= pidProfile->yawItermResetRate) errorGyroI[axis] = 0;
-            } else {
-                if (ABS(gyroRate / 4) >= pidProfile->rollPitchItermResetRate) errorGyroI[axis] = 0;
-            }
+        if (IS_RC_MODE_ACTIVE(BOXSUPEREXPO) && axis != YAW) {
+            if (ABS(gyroRate / 4) >= pidProfile->rollPitchItermResetRate) errorGyroI[axis] = 0;
+        }
+
+        if (axis == YAW) {
+            if (ABS(gyroRate / 4) >= pidProfile->yawItermResetRate) errorGyroI[axis] = 0;
         }
 
         if (antiWindupProtection || motorLimitReached) {
