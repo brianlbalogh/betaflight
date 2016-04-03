@@ -75,6 +75,13 @@
 
 #define USABLE_TIMER_CHANNEL_COUNT 11
 
+#define USE_VCP
+#define VBUS_SENSING_PIN PA8
+
+#define USE_SERIAL_4WAY_BLHELI_BOOTLOADER
+#define USE_SERIAL_4WAY_SK_BOOTLOADER
+
+#if !(defined(USE_SERIAL_4WAY_BLHELI_BOOTLOADER) || defined(USE_SERIAL_4WAY_SK_BOOTLOADER))
 #ifdef USE_VCP
 #define USE_SERIAL_1WIRE_VCP
 #else
@@ -86,6 +93,7 @@
 #define S1W_RX_GPIO         GPIOB
 #define S1W_RX_PIN          GPIO_Pin_11
 #endif
+#endif
 
 // MPU9250 interrupt
 //#define DEBUG_MPU_DATA_READY_INTERRUPT
@@ -94,9 +102,6 @@
 #define EXTI_CALLBACK_HANDLER_COUNT 1 // MPU data ready
 #define MPU_INT_EXTI PC5
 #define USE_EXTI
-
-#define USE_VCP
-#define VBUS_SENSING_PIN PA8
 
 #define USE_USART1
 #define USART1_RX_PIN PA10
