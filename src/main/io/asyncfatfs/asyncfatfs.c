@@ -50,7 +50,9 @@
  * How many blocks will we write in a row before we bother using the SDcard's multiple block write method?
  * If this define is omitted, this disables multi-block write.
  */
+#ifndef USE_SDIO
 #define AFATFS_MIN_MULTIPLE_BLOCK_WRITE_COUNT 4
+#endif
 
 #define AFATFS_FILES_PER_DIRECTORY_SECTOR (AFATFS_SECTOR_SIZE / sizeof(fatDirectoryEntry_t))
 
