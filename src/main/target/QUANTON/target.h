@@ -20,9 +20,6 @@
 
 #define CONFIG_START_FLASH_ADDRESS (0x08080000) //0x08080000 to 0x080A0000 (FLASH_Sector_8)
 
-#define USE_ESCSERIAL
-#define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
-
 #define USE_EXTI
 #define USE_SERVOS
 
@@ -87,9 +84,6 @@
 #define USE_SERIAL_1WIRE_VCP
 #endif
 #endif
-
-#define USE_ESCSERIAL
-#define ESCSERIAL_TIMER_TX_HARDWARE 0
 
 #define USE_SPI
 

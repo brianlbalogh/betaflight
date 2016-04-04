@@ -27,9 +27,6 @@
 
 #define USBD_PRODUCT_STRING "BlueJayF4"
 
-#define USE_ESCSERIAL
-#define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
-
 #define BOARD_HAS_VOLTAGE_DIVIDER
 #define USE_EXTI
 #define USE_SERVOS
@@ -132,9 +129,6 @@
 #define USE_SERIAL_1WIRE_VCP
 #endif
 #endif
-
-#define USE_ESCSERIAL
-#define ESCSERIAL_TIMER_TX_HARDWARE 0
 
 #define USE_SPI
 

@@ -28,9 +28,6 @@
 
 #define USBD_PRODUCT_STRING "AeroQuad32 V2"
 
-#define USE_ESCSERIAL
-#define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
-
 #define LED0 PE5
 #define LED0_INVERTED
 #define LED1 PE6

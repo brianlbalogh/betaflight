@@ -27,9 +27,6 @@
 
 #define USBD_PRODUCT_STRING "AlienFlight F4"
 
-#define USE_ESCSERIAL
-#define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
-
 #define LED0 PC12
 #define LED1 PD2
 
@@ -127,9 +124,6 @@
 //#define USART5_TX_PIN PC12
 
 #define SERIAL_PORT_COUNT 5
-
-//#define USE_ESCSERIAL
-//#define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
 
 #define USE_SPI
 
