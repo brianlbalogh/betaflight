@@ -47,9 +47,6 @@
 #define USE_MPU_DATA_READY_SIGNAL
 #define MPU_INT_EXTI PA15
 
-#define USE_ESCSERIAL
-#define ESCSERIAL_TIMER_TX_HARDWARE 0 // PWM 1
-
 // Using MPU6050 for the moment.
 #define GYRO
 #define USE_GYRO_MPU6050
