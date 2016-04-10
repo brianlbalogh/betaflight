@@ -1,6 +1,7 @@
 #!/bin/bash
 
 targets=("PUBLISHMETA=True" \
+<<<<<<< HEAD
      "TARGET=REVO" \
      "TARGET=REVO_OPBL" \
      "TARGET=SPARKY2" \
@@ -18,6 +19,7 @@ targets=("PUBLISHMETA=True" \
 #    "TARGET=COLIBRI_RACE" \
 #    "TARGET=LUX_RACE" \
 #    "TARGET=SPRACINGF3" \
+#    "TARGET=SPRACINGF3EVO" \
 #    "TARGET=SPRACINGF3MINI" \
 #    "TARGET=NAZE" \
 #    "TARGET=AFROMINI" \
@@ -26,7 +28,8 @@ targets=("PUBLISHMETA=True" \
 #    "TARGET=MOTOLAB" \
 #    "TARGET=IRCFUSIONF3" \
 #    "TARGET=ALIENFLIGHTF1" \
-#    "TARGET=ALIENFLIGHTF3")
+#    "TARGET=ALIENFLIGHTF3" \
+#    "TARGET=DOGE")
 
 #fake a travis build environment
 export TRAVIS_BUILD_NUMBER=$(date +%s)
