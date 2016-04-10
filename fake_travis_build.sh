@@ -1,7 +1,6 @@
 #!/bin/bash
 
 targets=("PUBLISHMETA=True" \
-<<<<<<< HEAD
      "TARGET=REVO" \
      "TARGET=REVO_OPBL" \
      "TARGET=SPARKY2" \
