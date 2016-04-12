@@ -36,10 +36,11 @@
 #define MAX_INPUTS  8
 
 #define PWM_TIMER_MHZ 1
-// all timers 12 MHZ in raceflight
 #define ONESHOT_TIMER_MHZ 24
-#define PWM_BRUSHED_TIMER_MHZ 8
+#define ONESHOT125_TIMER_MHZ 4
+#define ONESHOT42_TIMER_MHZ 12
 #define MULTISHOT_TIMER_MHZ 12
+#define PWM_BRUSHED_TIMER_MHZ 24
 
 typedef struct sonarGPIOConfig_s {
     GPIO_TypeDef *gpio;
@@ -59,7 +60,7 @@ typedef struct drv_pwm_config_s {
 #ifdef STM32F303xC
     bool useUART3;
 #endif
-#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+#ifdef STM32F4
     bool useUART2;
     bool useUART6;
 #endif

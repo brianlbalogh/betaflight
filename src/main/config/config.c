@@ -36,6 +36,7 @@
 #include "drivers/system.h"
 #include "drivers/gpio.h"
 #include "drivers/timer.h"
+#include "drivers/pwm_mapping.h"
 #include "drivers/pwm_rx.h"
 #include "drivers/serial.h"
 #include "drivers/gyro_sync.h"
@@ -75,7 +76,11 @@
 #include "config/config_master.h"
 
 #define BRUSHED_MOTORS_PWM_RATE 16000
+#ifdef STM32F4
+#define BRUSHLESS_MOTORS_PWM_RATE 2000
+#else
 #define BRUSHLESS_MOTORS_PWM_RATE 400
+#endif
 
 void useRcControlsConfig(modeActivationCondition_t *modeActivationConditions, escAndServoConfig_t *escAndServoConfigToUse, pidProfile_t *pidProfileToUse);
 
@@ -483,7 +488,7 @@ static void resetConf(void)
     masterConfig.rxConfig.rssi_ppm_invert = 0;
     masterConfig.rxConfig.rcSmoothing = 0;
     masterConfig.rxConfig.fpvCamAngleDegrees = 0;
-#if defined(STM32F40_41xxx) || defined (STM32F411xE)
+#ifdef STM32F4
     masterConfig.rxConfig.max_aux_channel = 12;
 #else
     masterConfig.rxConfig.max_aux_channel = 6;

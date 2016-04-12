@@ -257,7 +257,11 @@ static const char * const boardIdentifier = TARGET_BOARD_IDENTIFIER;
 #define MSP_SET_4WAY_IF          245    //in message          Sets 4way interface
 
 // Each MSP port requires state and a receive buffer, revisit this default if someone needs more than 2 MSP ports.
+#ifdef STM32F4
+#define MAX_MSP_PORT_COUNT 3
+#else
 #define MAX_MSP_PORT_COUNT 2
+#endif
 
 typedef enum {
     IDLE,

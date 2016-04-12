@@ -25,13 +25,13 @@
 #include "gpio.h"
 #include "timer.h"
 
+#include "pwm_mapping.h"
 #include "pwm_output.h"
 #include "pwm_rx.h"
-#include "pwm_mapping.h"
 
-void pwmBrushedMotorConfig(const timerHardware_t *timerHardware, uint8_t motorIndex, uint16_t motorPwmRate, uint16_t idlePulse);
+void pwmBrushedMotorConfig(const timerHardware_t *timerHardware, uint8_t motorIndex, uint16_t motorPwmRate);
 void pwmBrushlessMotorConfig(const timerHardware_t *timerHardware, uint8_t motorIndex, uint16_t motorPwmRate, uint16_t idlePulse);
-void pwmOneshotMotorConfig(const timerHardware_t *timerHardware, uint8_t motorIndex, uint8_t useOneshot42);
+void pwmOneshotMotorConfig(const timerHardware_t *timerHardware, uint8_t motorIndex, uint16_t motorPwmRate, uint8_t useOneshot42);
 void pwmMultiShotMotorConfig(const timerHardware_t *timerHardware, uint8_t motorIndex);
 void pwmServoConfig(const timerHardware_t *timerHardware, uint8_t servoIndex, uint16_t servoPwmRate, uint16_t servoCenterPulse);
 
@@ -469,18 +469,18 @@ static const uint16_t airPWM[] = {
 
 #ifdef REVONANO
 static const uint16_t multiPPM[] = {
-       PWM6  | (MAP_TO_PPM_INPUT << 8),     // PPM input
-    PWM7  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
-    PWM8  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
-    PWM9  | (MAP_TO_MOTOR_OUTPUT << 8),
-    PWM10 | (MAP_TO_MOTOR_OUTPUT << 8),
+       PWM1  | (MAP_TO_PPM_INPUT << 8),     // PPM input
+    PWM7  | (MAP_TO_MOTOR_OUTPUT << 8),     // Motor #1
+    PWM8  | (MAP_TO_MOTOR_OUTPUT << 8),     // Motor #2
+    PWM9  | (MAP_TO_MOTOR_OUTPUT << 8),     // Motor #3
+    PWM10 | (MAP_TO_MOTOR_OUTPUT << 8),     // Motor #4
     PWM11 | (MAP_TO_MOTOR_OUTPUT << 8),
     PWM12 | (MAP_TO_MOTOR_OUTPUT << 8),
     PWM2  | (MAP_TO_MOTOR_OUTPUT << 8),
     PWM3  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
     PWM4  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
     PWM5  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
-    PWM1  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
+    PWM6  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
     0xFFFF
 };
 static const uint16_t multiPWM[] = {
@@ -500,18 +500,18 @@ static const uint16_t multiPWM[] = {
 };
 
 static const uint16_t airPPM[] = {
-    PWM6  | (MAP_TO_PPM_INPUT << 8),     // PPM input
-    PWM7  | (MAP_TO_MOTOR_OUTPUT  << 8),
-    PWM8  | (MAP_TO_MOTOR_OUTPUT  << 8),
-    PWM9  | (MAP_TO_SERVO_OUTPUT  << 8),
-    PWM10 | (MAP_TO_SERVO_OUTPUT  << 8),
-    PWM11 | (MAP_TO_SERVO_OUTPUT  << 8),
-    PWM12 | (MAP_TO_SERVO_OUTPUT  << 8),
-    PWM2  | (MAP_TO_SERVO_OUTPUT  << 8),
-    PWM3  | (MAP_TO_SERVO_OUTPUT  << 8),
-    PWM4  | (MAP_TO_SERVO_OUTPUT  << 8),
-    PWM5  | (MAP_TO_SERVO_OUTPUT  << 8),
-    PWM1  | (MAP_TO_SERVO_OUTPUT  << 8),
+       PWM1  | (MAP_TO_PPM_INPUT << 8),     // PPM input
+    PWM7  | (MAP_TO_MOTOR_OUTPUT << 8),      // Motor #1
+    PWM8  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
+    PWM9  | (MAP_TO_MOTOR_OUTPUT << 8),
+    PWM10 | (MAP_TO_MOTOR_OUTPUT << 8),
+    PWM11 | (MAP_TO_MOTOR_OUTPUT << 8),
+    PWM12 | (MAP_TO_MOTOR_OUTPUT << 8),
+    PWM2  | (MAP_TO_MOTOR_OUTPUT << 8),
+    PWM3  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
+    PWM4  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
+    PWM5  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
+    PWM6  | (MAP_TO_MOTOR_OUTPUT << 8),      // Swap to servo if needed
     0xFFFF
 };
 
@@ -1437,41 +1437,43 @@ if (init->useBuzzerP6) {
         }
 #endif
 
+#define AVOIDANCE_CONDITION (!(init->useOneshot))
+
         if (type == MAP_TO_PPM_INPUT) {
 #ifdef REVO
-            if (init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
-                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM12);
-                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM8);
+            if (AVOIDANCE_CONDITION) {
+                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM12, init);
+                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM8, init);
             }
 #endif
-#ifdef REVONANO
-            if (init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
-                 ppmAvoidPWMTimerClash(timerHardwarePtr, TIM2);
+#if defined(REVONANO) || defined(SPARKY) || defined(ALIENFLIGHTF3)
+            if (AVOIDANCE_CONDITION) {
+                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM2, init);
              }
  #endif
 #ifdef SPARKY2
-            if (init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
-                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM8);
+            if (AVOIDANCE_CONDITION) {
+                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM8, init);
             }
 #endif
 #ifdef ALIENFLIGHTF4
-            if (init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
-                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM1);
+            if (AVOIDANCE_CONDITION) {
+                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM1, init);
             }
 #endif
 #ifdef AQ32_V2
-            if (init->useMultiShot || init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
-                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM4);
+            if (AVOIDANCE_CONDITION) {
+                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM4, init);
             }
 #endif
 #ifdef VRCORE
-            if (init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
-                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM1);
+            if (AVOIDANCE_CONDITION) {
+                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM1, init);
             }
 #endif
-#if defined(SPARKY) || defined(ALIENFLIGHTF3)
-            if (init->useOneshot || isMotorBrushed(init->motorPwmRate)) {
-                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM2);
+#ifdef CC3D
+            if (AVOIDANCE_CONDITION) {
+                ppmAvoidPWMTimerClash(timerHardwarePtr, TIM2, init);
             }
 #endif
             ppmInConfig(timerHardwarePtr);
@@ -1481,7 +1483,7 @@ if (init->useBuzzerP6) {
         } else if (type == MAP_TO_MOTOR_OUTPUT) {
 
 #ifdef CC3D
-            if (init->useOneshot || isMotorBrushed(init->motorPwmRate)){
+	    if (AVOIDANCE_CONDITION) {
             	// Skip it if it would cause PPM capture timer to be reconfigured or manually overflowed
             	if (timerHardwarePtr->tim == TIM2)
             		continue;
@@ -1491,11 +1493,11 @@ if (init->useBuzzerP6) {
                 if (init->useMultiShot) {
                     pwmMultiShotMotorConfig(timerHardwarePtr, pwmOutputConfiguration.motorCount);
                 } else {
-                    pwmOneshotMotorConfig(timerHardwarePtr, pwmOutputConfiguration.motorCount, init->useOneshot42);
+                    pwmOneshotMotorConfig(timerHardwarePtr, pwmOutputConfiguration.motorCount,init->motorPwmRate, init->useOneshot42);
                 }
                 pwmOutputConfiguration.portConfigurations[pwmOutputConfiguration.outputCount].flags = PWM_PF_MOTOR | PWM_PF_OUTPUT_PROTOCOL_ONESHOT|PWM_PF_OUTPUT_PROTOCOL_PWM ;
             } else if (isMotorBrushed(init->motorPwmRate)) {
-                pwmBrushedMotorConfig(timerHardwarePtr, pwmOutputConfiguration.motorCount, init->motorPwmRate, init->idlePulse);
+                pwmBrushedMotorConfig(timerHardwarePtr, pwmOutputConfiguration.motorCount, init->motorPwmRate);
                 pwmOutputConfiguration.portConfigurations[pwmOutputConfiguration.outputCount].flags = PWM_PF_MOTOR | PWM_PF_MOTOR_MODE_BRUSHED | PWM_PF_OUTPUT_PROTOCOL_PWM;
             } else {
                 pwmBrushlessMotorConfig(timerHardwarePtr, pwmOutputConfiguration.motorCount, init->motorPwmRate, init->idlePulse);

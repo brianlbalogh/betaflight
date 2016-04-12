@@ -35,22 +35,28 @@
 #define INVERTER PC15
 #define INVERTER_USART USART2
 
+#define MPU6500_CS_PIN       PA4
+#define MPU6500_SPI_INSTANCE SPI1
 #define MPU9250_CS_PIN        PA4
 #define MPU9250_SPI_INSTANCE  SPI1
 
 #define ACC
-#define USE_ACC_MPU9250
+#define USE_ACC_SPI_MPU6500
 #define USE_ACC_SPI_MPU9250
+
+#define ACC_MPU6500_ALIGN CW270_DEG
 #define ACC_MPU9250_ALIGN CW270_DEG
 
 #define GYRO
-#define USE_GYRO_MPU9250
+#define USE_GYRO_SPI_MPU6500
 #define USE_GYRO_SPI_MPU9250
+
+#define GYRO_MPU6500_ALIGN CW270_DEG
 #define GYRO_MPU9250_ALIGN CW270_DEG
 
 #define MAG
 #define USE_MAG_HMC5883
-//#define MAG_HMC5883_ALIGN CW180_DEG
+#define MAG_HMC5883_ALIGN CW180_DEG
 #define USE_MAG_AK8963
 #define MAG_AK8963_ALIGN CW270_DEG
 
@@ -62,11 +68,11 @@
 
 //#define SDCARD_DETECT_INVERTED
 
-//#define SDCARD_DETECT_PIN                   PC14
-//#define SDCARD_DETECT_EXTI_LINE             EXTI_Line14
-//#define SDCARD_DETECT_EXTI_PIN_SOURCE       EXTI_PinSource14
-//#define SDCARD_DETECT_EXTI_PORT_SOURCE      EXTI_PortSourceGPIOC
-//#define SDCARD_DETECT_EXTI_IRQn             EXTI15_10_IRQn
+#define SDCARD_DETECT_PIN                   PB10
+#define SDCARD_DETECT_EXTI_LINE             EXTI_Line10
+#define SDCARD_DETECT_EXTI_PIN_SOURCE       EXTI_PinSource10
+#define SDCARD_DETECT_EXTI_PORT_SOURCE      EXTI_PortSourceGPIOB
+#define SDCARD_DETECT_EXTI_IRQn             EXTI15_10_IRQn
 
 #define SDCARD_SPI_INSTANCE                 SPI2
 #define SDCARD_SPI_CS_PIN                   SPI2_NSS_PIN
@@ -111,9 +117,9 @@
 #define USART2_RX_PIN PA3
 #define USART2_TX_PIN PA2 //inverter
 
-#define USE_USART3
-#define USART3_RX_PIN PB11
-#define USART3_TX_PIN PB10
+//#define USE_USART3
+//#define USART3_RX_PIN PB11
+//#define USART3_TX_PIN PB10
 
 #define USE_USART4
 #define USART4_RX_PIN PC10
@@ -123,7 +129,7 @@
 //#define USART5_RX_PIN PD2
 //#define USART5_TX_PIN PC12
 
-#define SERIAL_PORT_COUNT 5
+#define SERIAL_PORT_COUNT 4
 
 #define USE_SPI
 
@@ -188,6 +194,7 @@
 #define BIND_PIN   Pin_3
 
 // alternative defaults for AlienWii32 F4 target
+#define ALIENFLIGHT
 #define ALIENWII32
 
 // Hardware bind plug at PB2 (Pin 28)
@@ -204,4 +211,4 @@
 #define TARGET_IO_PORTA 0xffff
 #define TARGET_IO_PORTB 0xffff
 #define TARGET_IO_PORTC 0xffff
-#define TARGET_IO_PORTD 0xffff
+#define TARGET_IO_PORTD (BIT(2))

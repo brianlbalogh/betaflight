@@ -285,12 +285,8 @@ bool detectGyro(void)
             ; // fallthrough
 
         case GYRO_MPU6500:
-#ifdef USE_GYRO_MPU6500
-#ifdef USE_GYRO_SPI_MPU6500
+#if defined(USE_GYRO_MPU6500) || defined(USE_GYRO_SPI_MPU6500)
             if (mpu6500GyroDetect(&gyro) || mpu6500SpiGyroDetect(&gyro))
-#else
-            if (mpu6500GyroDetect(&gyro))
-#endif
             {
                 gyroHardware = GYRO_MPU6500;
 #ifdef GYRO_MPU6500_ALIGN
@@ -432,12 +428,8 @@ retry:
 #endif
             ; // fallthrough
         case ACC_MPU6500:
-#ifdef USE_ACC_MPU6500
-#ifdef USE_ACC_SPI_MPU6500
+#if defined(USE_GYRO_MPU6500) || defined(USE_GYRO_SPI_MPU6500)
             if (mpu6500AccDetect(&acc) || mpu6500SpiAccDetect(&acc))
-#else
-            if (mpu6500AccDetect(&acc))
-#endif
             {
 #ifdef ACC_MPU6500_ALIGN
                 accAlign = ACC_MPU6500_ALIGN;
@@ -448,7 +440,7 @@ retry:
 #endif
             ; // fallthrough
         case ACC_MPU9250:
-#ifdef USE_ACC_MPU9250
+#ifdef USE_ACC_SPI_MPU9250
             if (mpu9250SpiAccDetect(&acc))
             {
 #ifdef ACC_MPU9250_ALIGN
@@ -705,10 +697,6 @@ bool sensorsAutodetect(sensorAlignmentConfig_t *sensorAlignmentConfig, uint8_t a
 
     detectMag(magHardwareToUse);
 
-#if defined(USE_GYRO_SPI_MPU6500)
-    spiSetDivisor(MPU6500_SPI_INSTANCE, SPI_ULTRAFAST_CLOCK);
-#endif
-
     reconfigureAlignment(sensorAlignmentConfig);
 
     // FIXME extract to a method to reduce dependencies, maybe move to sensors_compass.c
@@ -721,6 +709,10 @@ bool sensorsAutodetect(sensorAlignmentConfig_t *sensorAlignmentConfig, uint8_t a
     } else {
         magneticDeclination = 0.0f; // TODO investigate if this is actually needed if there is no mag sensor or if the value stored in the config should be used.
     }
+
+#if defined(USE_GYRO_SPI_MPU6500)
+    spiSetDivisor(MPU6500_SPI_INSTANCE, SPI_ULTRAFAST_CLOCK);
+#endif
 
     return true;
 }

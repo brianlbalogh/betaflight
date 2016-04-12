@@ -40,6 +40,7 @@
 #include "drivers/bus_i2c.h"
 #include "drivers/gpio.h"
 #include "drivers/timer.h"
+#include "drivers/pwm_mapping.h"
 #include "drivers/pwm_rx.h"
 #include "drivers/gyro_sync.h"
 #include "drivers/sdcard.h"
@@ -346,12 +347,14 @@ static void tailSerialReply(void)
     serialEndWrite(mspSerialPort);
 }
 
+#ifdef USE_SERVOS
 static void s_struct(uint8_t *cb, uint8_t siz)
 {
     headSerialReply(siz);
     while (siz--)
         serialize8(*cb++);
 }
+#endif
 
 static void serializeNames(const char *s)
 {
@@ -607,12 +610,14 @@ void mspInit(serialConfig_t *serialConfig)
 
     activeBoxIds[activeBoxIdCount++] = BOXOSD;
 
+#ifdef TELEMETRY
     if (feature(FEATURE_TELEMETRY) && masterConfig.telemetryConfig.telemetry_switch)
         activeBoxIds[activeBoxIdCount++] = BOXTELEMETRY;
 
     if (feature(FEATURE_SONAR)){
         activeBoxIds[activeBoxIdCount++] = BOXSONAR;
     }
+#endif
 
 #ifdef USE_SERVOS
     if (masterConfig.mixerMode == MIXER_CUSTOM_AIRPLANE) {
@@ -1293,7 +1298,7 @@ static bool processInCommand(void)
     case MSP_SELECT_SETTING:
         if (!ARMING_FLAG(ARMED)) {
             masterConfig.current_profile_index = read8();
-            if (masterConfig.current_profile_index > 1) {
+            if (masterConfig.current_profile_index > MAX_PROFILE_COUNT - 1) {
                 masterConfig.current_profile_index = 0;
             }
             writeEEPROM();

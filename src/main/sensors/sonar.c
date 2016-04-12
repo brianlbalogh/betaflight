@@ -56,12 +56,16 @@ const sonarHardware_t *sonarGetHardwareConfiguration(batteryConfig_t *batteryCon
         .trigger_gpio = GPIOB,
         .echo_pin = Pin_9,      // PWM6 (PB9) - 5v tolerant
         .echo_gpio = GPIOB,
+	.triggerIO = IO_TAG(PB8),
+	.echoIO = IO_TAG(PB9),
     };
     static const sonarHardware_t sonarRC78 = {
         .trigger_pin = Pin_0,   // RX7 (PB0) - only 3.3v ( add a 1K Ohms resistor )
         .trigger_gpio = GPIOB,
         .echo_pin = Pin_1,      // RX8 (PB1) - only 3.3v ( add a 1K Ohms resistor )
         .echo_gpio = GPIOB,
+	.triggerIO = IO_TAG(PB0),
+	.echoIO = IO_TAG(PB1),
     };
     // If we are using softserial, parallel PWM or ADC current sensor, then use motor pins 5 and 6 for sonar, otherwise use rc pins 7 and 8
     if (feature(FEATURE_SOFTSERIAL)
@@ -78,6 +82,8 @@ const sonarHardware_t *sonarGetHardwareConfiguration(batteryConfig_t *batteryCon
         .trigger_gpio = GPIOB,
         .echo_pin = Pin_1,      // RX8 (PB1) - only 3.3v ( add a 1K Ohms resistor )
         .echo_gpio = GPIOB,
+	.triggerIO = IO_TAG(PB0),
+	.echoIO = IO_TAG(PB1),
     };
     return &sonarHardware;
 #elif defined(CC3D)
@@ -87,6 +93,8 @@ const sonarHardware_t *sonarGetHardwareConfiguration(batteryConfig_t *batteryCon
         .trigger_gpio = GPIOB,
         .echo_pin = Pin_0,      // (PB0) - only 3.3v ( add a 1K Ohms resistor )
         .echo_gpio = GPIOB,
+	.triggerIO = IO_TAG(PB5),
+	.echoIO = IO_TAG(PB0),
     };
     return &sonarHardware;
 #elif defined(SPRACINGF3) || defined(SPRACINGF3MINI)
@@ -96,6 +104,8 @@ const sonarHardware_t *sonarGetHardwareConfiguration(batteryConfig_t *batteryCon
         .trigger_gpio = GPIOB,
         .echo_pin = Pin_1,      // RC_CH8 (PB1) - only 3.3v ( add a 1K Ohms resistor )
         .echo_gpio = GPIOB,
+	.triggerIO = IO_TAG(PB0),
+	.echoIO = IO_TAG(PB1),
     };
     return &sonarHardware;
 #elif defined(SPARKY)
@@ -105,6 +115,8 @@ const sonarHardware_t *sonarGetHardwareConfiguration(batteryConfig_t *batteryCon
         .trigger_gpio = GPIOA,
         .echo_pin = Pin_1,      // PWM7 (PB1) - only 3.3v ( add a 1K Ohms resistor )
         .echo_gpio = GPIOB,
+	.triggerIO = IO_TAG(PA2),
+	.echoIO = IO_TAG(PB1),
     };
     return &sonarHardware;
 #elif defined(UNIT_TEST)

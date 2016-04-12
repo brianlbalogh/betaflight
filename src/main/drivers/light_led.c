@@ -90,6 +90,13 @@ void ledInit(bool alternative_led)
 {
        uint32_t i;
 
+#if defined(LED0_A) || defined(LED1_A) || defined(LED2_A)
+       if (alternative_led)
+           ledOffset = LED_NUMBER;
+#else
+       UNUSED(alternative_led);
+#endif
+
        LED0_OFF;
        LED1_OFF;
        LED2_OFF;
