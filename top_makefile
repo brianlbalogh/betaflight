@@ -43,7 +43,7 @@ CLEAN_TARGETS     := $(addprefix clean_, $(ALL_TARGETS))
 #clean_rmdo rmdo :                         opts := TARGET=RMDO
 #clean_ircfusionf3 ircfusionf3 :           opts := TARGET=IRCFUSIONF3
 #clean_afromini afromini :                 opts := TARGET=AFROMINI
-#clean_afromini doge :                     opts := TARGET=DOGE
+#clean_doge doge :                         opts := TARGET=DOGE
 clean_revo revo:			opts := TARGET=REVO
 clean_revo_opbl revo_opbl:		opts := TARGET=REVO_OPBL
 clean_sparky2 sparky2:			opts := TARGET=SPARKY2

@@ -35,6 +35,11 @@
 #define MPU6500_CS_PIN                   PA4
 #define MPU6500_SPI_INSTANCE             SPI1
 
+#define MPU6000_CS_GPIO_CLK_PERIPHERAL   RCC_AHBPeriph_GPIOA
+#define MPU6000_CS_GPIO				 GPIOA
+#define MPU6000_CS_PIN				 GPIO_Pin_4
+#define MPU6000_SPI_INSTANCE             SPI1
+
 #define USE_SPI
 #define USE_SPI_DEVICE_1
 
@@ -45,11 +50,15 @@
 #define USABLE_TIMER_CHANNEL_COUNT 11
 
 #define GYRO
+#define USE_GYRO_SPI_MPU6000
+#define GYRO_MPU6000_ALIGN CW270_DEG
 #define USE_GYRO_MPU6500
 #define USE_GYRO_SPI_MPU6500
 #define GYRO_MPU6500_ALIGN CW270_DEG
 
 #define ACC
+#define USE_ACC_SPI_MPU6000
+#define ACC_MPU6000_ALIGN CW270_DEG
 #define USE_ACC_MPU6500
 #define USE_ACC_SPI_MPU6500
 #define ACC_MPU6500_ALIGN CW270_DEG
@@ -65,7 +74,9 @@
 
 // External I2C MAG
 #define MAG
+#define USE_MPU9250_MAG
 #define USE_MAG_HMC5883
+#define USE_MAG_AK8963
 #define USE_MAG_AK8975
 
 #define USE_VCP
@@ -128,6 +139,7 @@
 #define GPS
 //#define GTUNE
 #define LED_STRIP
+#define USE_COLIBTI_RACE_LED_DEFAULT_CONFIG
 
 #define LED_STRIP_TIMER TIM16
 
