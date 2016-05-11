@@ -28,6 +28,10 @@ OPBL ?=no
 # Debugger optons, must be empty or GDB
 DEBUG ?=
 
+# Insert the debugging hardfault debugger
+# releases should not be built with this flag as it does not disable pwm output
+DEBUG_HARDFAULTS ?=
+
 # Serial port/Device for flashing
 SERIAL_DEVICE	?= $(firstword $(wildcard /dev/ttyUSB*) no-port-found)
 
@@ -62,6 +66,14 @@ OPBL_VALID_TARGETS = CC3D_OPBL REVO_OPBL REVONANO_OPBL SPARKY2_OPBL QUANTON_OPBL
 64K_TARGETS  = CJMCU
 128K_TARGETS = ALIENFLIGHTF1 $(CC3D_TARGETS) NAZE OLIMEXINO RMDO AFROMINI
 256K_TARGETS = EUSTM32F103RC PORT103R STM32F3DISCOVERY CHEBUZZF3 NAZE32PRO SPRACINGF3 IRCFUSIONF3 SPARKY ALIENFLIGHTF3 COLIBRI_RACE LUX_RACE MOTOLAB SPRACINGF3MINI SPRACINGF3EVO DOGE $(F4_TARGETS)
+
+# note that there is no hardfault debugging startup file assembly handler for other platforms
+ifeq ($(DEBUG_HARDFAULTS),F3)
+CFLAGS += -DDEBUG_HARDFAULTS
+STM32F30x_COMMON_SRC = startup_stm32f3_debug_hardfault_handler.S
+else
+STM32F30x_COMMON_SRC = startup_stm32f30x_md_gcc.S
+endif
 
 # Configure default flash sizes for the targets
 ifeq ($(FLASH_SIZE),)
@@ -330,6 +342,9 @@ endif
 
 ifeq ($(TARGET),$(filter $(TARGET), $(CC3D_TARGETS)))
 TARGET_FLAGS := $(TARGET_FLAGS) -DCC3D 
+ifeq ($(TARGET),CC3D_OPBL)
+TARGET_FLAGS := $(TARGET_FLAGS) -DCC3D_OPBL
+endif
 TARGET_DIR = $(ROOT)/src/main/target/CC3D
 endif
 
@@ -742,6 +757,24 @@ VRCORE_SRC = $(STM32F4xx_COMMON_SRC) \
                   $(COMMON_SRC) \
                   $(VCPF4_SRC)
 
+STM32F30x_COMMON_SRC += \
+		   drivers/adc.c \
+		   drivers/adc_stm32f30x.c \
+		   drivers/bus_i2c_stm32f30x.c \
+		   drivers/bus_spi.c \
+		   drivers/display_ug2864hsweg01.h \
+		   drivers/gpio_stm32f30x.c \
+		   drivers/light_led_stm32f30x.c \
+		   drivers/pwm_mapping.c \
+		   drivers/pwm_output.c \
+		   drivers/pwm_rx.c \
+		   drivers/serial_uart.c \
+		   drivers/serial_uart_stm32f30x.c \
+		   drivers/sound_beeper_stm32f30x.c \
+		   drivers/system_stm32f30x.c \
+		   drivers/timer.c \
+		   drivers/timer_stm32f30x.c
+
 NAZE32PRO_SRC = \
 		   $(STM32F30x_COMMON_SRC) \
 		   $(HIGHEND_SRC) \
@@ -751,7 +784,6 @@ NAZE32PRO_SRC = \
 STM32F3DISCOVERY_COMMON_SRC = \
 		   $(STM32F30x_COMMON_SRC) \
 		   drivers/light_ws2811strip.c \
-		   drivers/accgyro_l3gd20.c \
 		   drivers/accgyro_l3gd20.c \
 		   drivers/accgyro_lsm303dlhc.c \
 		   drivers/compass_hmc5883l.c \
@@ -998,7 +1030,7 @@ endif
 
 DEBUG_FLAGS	 = -ggdb3 -DDEBUG
 
-CFLAGS		 = $(ARCH_FLAGS) \
+CFLAGS		 += $(ARCH_FLAGS) \
 		   $(LTO_FLAGS) \
 		   $(addprefix -D,$(OPTIONS)) \
 		   $(addprefix -I,$(INCLUDE_DIRS)) \
@@ -1064,11 +1096,8 @@ TARGET_OBJS	 = $(addsuffix .o,$(addprefix $(OBJECT_DIR)/$(TARGET)/,$(basename $(
 TARGET_DEPS	 = $(addsuffix .d,$(addprefix $(OBJECT_DIR)/$(TARGET)/,$(basename $($(TARGET)_SRC))))
 TARGET_MAP	 = $(OBJECT_DIR)/$(FORKNAME)_$(TARGET).map
 
-ifeq ($(OPBL),yes)
 CLEAN_ARTIFACTS := $(TARGET_BIN)
-else
-CLEAN_ARTIFACTS := $(TARGET_HEX)
-endif
+CLEAN_ARTIFACTS += $(TARGET_HEX)
 CLEAN_ARTIFACTS += $(TARGET_ELF) $(TARGET_OBJS) $(TARGET_MAP) 
 
 # List of buildable ELF files and their object dependencies.

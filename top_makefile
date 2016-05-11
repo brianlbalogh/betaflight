@@ -71,7 +71,7 @@ everything: $(ALL_TARGETS)
 
 .PHONY:$(ALL_TARGETS)
 $(ALL_TARGETS):
-	make -f Makefile $(opts)
+	make -f Makefile hex binary $(opts)
 
 .PHONY: $(CLEAN_TARGETS)
 $(CLEAN_TARGETS):

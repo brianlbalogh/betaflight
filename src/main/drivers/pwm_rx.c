@@ -20,8 +20,9 @@
 
 #include <stdlib.h>
 
-#include "platform.h"
+#include <platform.h>
 #include "build_config.h"
+#include "debug.h"
 
 #include "common/utils.h"
 
@@ -33,18 +34,21 @@
 
 #include "pwm_mapping.h"
 
+#include "pwm_output.h"
 #include "pwm_rx.h"
+
+#define DEBUG_PPM_ISR
 
 #define PPM_CAPTURE_COUNT 12
 #define PWM_INPUT_PORT_COUNT 8
 
-#if PPM_CAPTURE_COUNT > MAX_PWM_INPUT_PORTS
+#if PPM_CAPTURE_COUNT > PWM_INPUT_PORT_COUNT
 #define PWM_PORTS_OR_PPM_CAPTURE_COUNT PPM_CAPTURE_COUNT
 #else
 #define PWM_PORTS_OR_PPM_CAPTURE_COUNT PWM_INPUT_PORT_COUNT
 #endif
 
-// TODO - change to timer cloks ticks
+// TODO - change to timer clocks ticks
 #define INPUT_FILTER_TO_HELP_WITH_NOISE_FROM_OPENLRS_TELEMETRY_RX 0x03
 
 static inputFilteringMode_e inputFilteringMode;
@@ -85,7 +89,8 @@ static uint8_t ppmCountDivisor = 1;
 
 typedef struct ppmDevice_s {
     uint8_t  pulseIndex;
-    uint32_t previousTime;
+    //uint32_t previousTime;
+    uint32_t currentCapture;
     uint32_t currentTime;
     uint32_t deltaTime;
     uint32_t captures[PWM_PORTS_OR_PPM_CAPTURE_COUNT];
@@ -95,6 +100,7 @@ typedef struct ppmDevice_s {
     uint8_t  stableFramesSeenCount;
 
     bool     tracking;
+    bool     overflowed;
 } ppmDevice_t;
 
 ppmDevice_t ppmDev;
@@ -125,10 +131,35 @@ void pwmRxInit(inputFilteringMode_e initialInputFilteringMode)
     inputFilteringMode = initialInputFilteringMode;
 }
 
+#ifdef DEBUG_PPM_ISR
+typedef enum {
+    SOURCE_OVERFLOW = 0,
+    SOURCE_EDGE = 1
+} eventSource_e;
+
+typedef struct ppmISREvent_s {
+    eventSource_e source;
+    uint32_t capture;
+} ppmISREvent_t;
+
+static ppmISREvent_t ppmEvents[20];
+static uint8_t ppmEventIndex = 0;
+
+void ppmISREvent(eventSource_e source, uint32_t capture)
+{
+    ppmEventIndex = (ppmEventIndex + 1) % (sizeof(ppmEvents) / sizeof(ppmEvents[0]));
+
+    ppmEvents[ppmEventIndex].source = source;
+    ppmEvents[ppmEventIndex].capture = capture;
+}
+#else
+void ppmISREvent(eventSource_e source, uint32_t capture) {}
+#endif
+
 static void ppmInit(void)
 {
     ppmDev.pulseIndex   = 0;
-    ppmDev.previousTime = 0;
+    ppmDev.currentCapture = 0;
     ppmDev.currentTime  = 0;
     ppmDev.deltaTime    = 0;
     ppmDev.largeCounter = 0;
@@ -136,27 +167,42 @@ static void ppmInit(void)
     ppmDev.numChannelsPrevFrame = -1;
     ppmDev.stableFramesSeenCount = 0;
     ppmDev.tracking     = false;
+    ppmDev.overflowed   = false;
 }
 
 static void ppmOverflowCallback(timerOvrHandlerRec_t* cbRec, captureCompare_t capture)
 {
     UNUSED(cbRec);
+    ppmISREvent(SOURCE_OVERFLOW, capture);
+
     ppmDev.largeCounter += capture + 1;
+    if (capture == PPM_TIMER_PERIOD - 1) {
+        ppmDev.overflowed = true;
+    }
+
 }
 
 static void ppmEdgeCallback(timerCCHandlerRec_t* cbRec, captureCompare_t capture)
 {
     UNUSED(cbRec);
+    ppmISREvent(SOURCE_EDGE, capture);
+
     int32_t i;
 
-    /* Shift the last measurement out */
-    ppmDev.previousTime = ppmDev.currentTime;
+    uint32_t previousTime = ppmDev.currentTime;
+    uint32_t previousCapture = ppmDev.currentCapture;
 
     /* Grab the new count */
-    ppmDev.currentTime  = capture;
+    uint32_t currentTime = capture;
 
     /* Convert to 32-bit timer result */
-    ppmDev.currentTime += ppmDev.largeCounter;
+    currentTime += ppmDev.largeCounter;
+
+    if (capture < previousCapture) {
+        if (ppmDev.overflowed) {
+            currentTime += PPM_TIMER_PERIOD;
+        }
+    }
 
     // Divide value if Oneshot, Multishot or brushed motors are active and the timer is shared
     if (ppmCountDivisor > 1) {
@@ -164,16 +210,36 @@ static void ppmEdgeCallback(timerCCHandlerRec_t* cbRec, captureCompare_t capture
     }
 
     /* Capture computation */
-    ppmDev.deltaTime    = ppmDev.currentTime - ppmDev.previousTime;
+    if (currentTime > previousTime) {
+        ppmDev.deltaTime    = currentTime - (previousTime + (ppmDev.overflowed ? (PPM_TIMER_PERIOD / ppmCountDivisor) : 0));
+    } else {
+        ppmDev.deltaTime    = (PPM_TIMER_PERIOD / ppmCountDivisor) + currentTime - previousTime;
+    }
 
-    ppmDev.previousTime = ppmDev.currentTime;
+    ppmDev.overflowed = false;
 
-#if 0
+
+    /* Store the current measurement */
+    ppmDev.currentTime = currentTime;
+    ppmDev.currentCapture = capture;
+
+#if 1
     static uint32_t deltaTimes[20];
     static uint8_t deltaIndex = 0;
 
     deltaIndex = (deltaIndex + 1) % 20;
     deltaTimes[deltaIndex] = ppmDev.deltaTime;
+    UNUSED(deltaTimes);
+#endif
+
+
+#if 1
+    static uint32_t captureTimes[20];
+    static uint8_t captureIndex = 0;
+
+    captureIndex = (captureIndex + 1) % 20;
+    captureTimes[captureIndex] = capture;
+    UNUSED(captureTimes);
 #endif
 
     /* Sync pulse detection */
@@ -329,13 +395,15 @@ void pwmInConfig(const timerHardware_t *timerHardwarePtr, uint8_t channel)
 void ppmAvoidPWMTimerClash(const timerHardware_t *timerHardwarePtr, TIM_TypeDef *sharedPwmTimer, drv_pwm_config_t *init)
 {
     if (timerHardwarePtr->tim == sharedPwmTimer) {
-        if (init->useOneshot) {
-	    if (init->useMultiShot)
-	        ppmCountDivisor = MULTISHOT_TIMER_MHZ;
-	    else if (init->useOneshot42)
-	        ppmCountDivisor = ONESHOT42_TIMER_MHZ;
-	    else
+        if (init->useUnsyncedPwm) {
+            switch (init->fastPwmProtocolType) {
+	    case PWM_TYPE_ONESHOT125:
 	        ppmCountDivisor = ONESHOT125_TIMER_MHZ;
+	    case PWM_TYPE_ONESHOT42:
+	        ppmCountDivisor = ONESHOT42_TIMER_MHZ;
+	    case PWM_TYPE_MULTISHOT:
+                ppmCountDivisor = MULTISHOT_TIMER_MHZ;
+	    }
 	} else {
 	    ppmCountDivisor = PWM_BRUSHED_TIMER_MHZ;
 	}
