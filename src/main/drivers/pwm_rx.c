@@ -396,7 +396,7 @@ void ppmAvoidPWMTimerClash(const timerHardware_t *timerHardwarePtr, TIM_TypeDef 
 {
     if (timerHardwarePtr->tim == sharedPwmTimer) {
         if (init->useUnsyncedPwm) {
-            switch (init->fastPwmProtocolType) {
+            switch (init->pwmProtocolType) {
 	    case PWM_TYPE_ONESHOT125:
 	        ppmCountDivisor = ONESHOT125_TIMER_MHZ;
 	    case PWM_TYPE_ONESHOT42:

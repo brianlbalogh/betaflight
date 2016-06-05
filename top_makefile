@@ -14,6 +14,7 @@
 #ALL_TARGETS += ircfusionf3
 #ALL_TARGETS += afromini
 #ALL_TARGETS += doge
+#ALL_TARGETS += singularity
 ALL_TARGETS += revo 
 ALL_TARGETS += revo_opbl 
 ALL_TARGETS += sparky2 
@@ -44,6 +45,7 @@ CLEAN_TARGETS     := $(addprefix clean_, $(ALL_TARGETS))
 #clean_ircfusionf3 ircfusionf3 :           opts := TARGET=IRCFUSIONF3
 #clean_afromini afromini :                 opts := TARGET=AFROMINI
 #clean_doge doge :                         opts := TARGET=DOGE
+#clean_singularity singularity :           opts := TARGET=SINGULARITY
 clean_revo revo:			opts := TARGET=REVO
 clean_revo_opbl revo_opbl:		opts := TARGET=REVO_OPBL
 clean_sparky2 sparky2:			opts := TARGET=SPARKY2
