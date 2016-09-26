@@ -41,6 +41,8 @@
 #include "drivers/accgyro_mpu6500.h"
 #include "drivers/accgyro_l3gd20.h"
 #include "drivers/accgyro_lsm303dlhc.h"
+#include "drivers/accgyro_itg.h"
+#include "drivers/accgyro_spi_itg1010.h"
 
 #include "drivers/bus_spi.h"
 #include "drivers/accgyro_spi_mpu6000.h"
@@ -89,6 +91,18 @@ const extiConfig_t *selectMPUIntExtiConfig(void)
 #if defined(MPU_INT_EXTI)
     static const extiConfig_t mpuIntExtiConfig = { .tag = IO_TAG(MPU_INT_EXTI) };
     return &mpuIntExtiConfig;
+#elif defined(USE_HARDWARE_REVISION_DETECTION)
+    return selectMPUIntExtiConfigByHardwareRevision();
+#else
+    return NULL;
+#endif
+}
+
+const extiConfig_t *selectGyroIntExtiConfig(void)
+{
+#if defined(GYRO_INT_EXTI)
+    static const extiConfig_t gyroIntExtiConfig = { .tag = IO_TAG(GYRO_INT_EXTI) };
+    return &gyroIntExtiConfig;
 #elif defined(USE_HARDWARE_REVISION_DETECTION)
     return selectMPUIntExtiConfigByHardwareRevision();
 #else
@@ -252,6 +266,18 @@ bool detectGyro(void)
 #endif
 
             break;
+        }
+#endif
+        ; // fallthrough
+	case GYRO_ITG1010:
+#ifdef USE_GYRO_SPI_ITG1010
+        if (itg1010SpiGyroDetect(&gyro))
+        {
+           gyroHardware = GYRO_ITG1010;
+#ifdef GYRO_ITG1010_ALIGN
+           gyroAlign = GYRO_ITG1010_ALIGN;
+#endif
+           break;
         }
 #endif
         ; // fallthrough
@@ -622,6 +648,13 @@ bool sensorsAutodetect(sensorAlignmentConfig_t *sensorAlignmentConfig,
 
     mpuDetectionResult_t *mpuDetectionResult = detectMpu(extiConfig);
     UNUSED(mpuDetectionResult);
+#endif
+
+#if defined(USE_GYRO_ITG1010) || defined(USE_GYRO_SPI_ITG1010)
+    const extiConfig_t *extiConfig = selectGyroIntExtiConfig();
+
+    itgDetectionResult_t *itgDetectionResult = detectItg(extiConfig);
+    UNUSED(itgDetectionResult);
 #endif
 
     if (!detectGyro()) {
